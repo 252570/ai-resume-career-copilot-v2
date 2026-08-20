@@ -23,11 +23,11 @@
 - [x] Include the required configuration in the root `dist/` package without exposing secrets.
 - [x] Verify the artifact includes the managed deployment configuration alongside `dist/server.js`.
 
-## Deferred Phase 2 — PostgreSQL Database Foundation
+## Current Work — Phase 2 PostgreSQL Database Foundation
 
-- [ ] Inspect the Phase 1 backend, dependency state, and PostgreSQL availability.
-- [ ] Finalize the user-profile and resume-storage metadata model.
-- [ ] Add SQLAlchemy models, database session management, repositories, and Alembic migration support.
-- [ ] Configure and apply the PostgreSQL schema without introducing document upload or parsing.
-- [ ] Add database-focused tests and verify the migration, API health, and test suite.
-- [ ] Document the completed Phase 2 foundation and stop for Phase 3 approval.
+- [x] Inspect the backend architecture, current frontend boundary, and local PostgreSQL prerequisites.
+- [x] Define normalized models, foreign keys, uniqueness constraints, and indexes for User, Resume, Job, Skill, ResumeSkill, JobSkill, and MatchResult.
+- [x] Add SQLAlchemy database configuration, engine/session lifecycle, models, Pydantic schemas, repositories, and error handling.
+- [x] Configure Alembic and create an initial PostgreSQL migration.
+- [x] Verify PostgreSQL migration SQL generation, database configuration, model behavior, backend tests, and the untouched frontend build.
+- [x] Update database setup documentation and stop for Phase 3 approval.

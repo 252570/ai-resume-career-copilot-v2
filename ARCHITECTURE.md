@@ -17,19 +17,23 @@ The project is organized as a modular, independently runnable web client and RES
                              │ Phase 2 onward
 ┌────────────────────────────▼────────────────────────────┐
 │ PostgreSQL                                                 │
-│ users · resumes · analyses · roadmaps · applications      │
+│ users · resumes · jobs · skills · match_results           │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ## Current modules
 
-| Module | Responsibility in Phase 1 | Future extension boundary |
+| Module | Responsibility through Phase 2 | Future extension boundary |
 | --- | --- | --- |
 | `frontend/app` | Present the responsive product shell and Phase 1 state. | Dashboard, upload flows, result visualizations, authenticated routes. |
 | `backend/app/api/v1` | Expose versioned HTTP routing and service health. | Resume, jobs, analyses, roadmaps, recommendations, interviews, applications. |
-| `backend/app/schemas` | Define serializable request/response models. | Resource contracts and explainability payloads. |
-| `backend/app/core` | Centralize validated server configuration. | Logging, security settings, database factory, provider configuration. |
-| `backend/tests` | Verify the public service contract. | Unit, integration, authorization, and security tests. |
+| `backend/app/schemas` | Define Pydantic contracts separately from persisted entities. | Resource contracts and explainability payloads. |
+| `backend/app/core` | Centralize validated configuration and safe database configuration errors. | Logging, security settings, and provider configuration. |
+| `backend/app/db` | Provide SQLAlchemy metadata, lazy engine construction, and request session lifecycle. | Transaction middleware and read/write splitting if later required. |
+| `backend/app/models` | Define normalized PostgreSQL entities, constraints, indexes, and relationships. | Parsed resume fields and user-isolated features. |
+| `backend/app/repositories` | Keep simple persistence lookup operations outside API routes. | Feature-specific service orchestration. |
+| `backend/alembic` | Version PostgreSQL schema changes. | Future schema migrations for each planned phase. |
+| `backend/tests` | Verify public health, database configuration, and important persistence relationships. | Integration, authorization, and security tests. |
 
 ## API conventions
 
@@ -48,7 +52,7 @@ The application will return meaningful HTTP status codes and problem-oriented er
 
 | Phase | Planned addition | Architecture impact |
 | ---: | --- | --- |
-| 2 | PostgreSQL and Alembic migrations | Add database session factory, SQLAlchemy models, repository tests. |
+| 2 | PostgreSQL and Alembic migrations | **Complete:** database session factory, SQLAlchemy models, Pydantic contracts, initial migration, repository boundary, and tests. |
 | 3–4 | Resume upload, parsing, intelligence | Add private file storage abstraction, parser adapters, normalized resume schemas. |
 | 5–7 | Job analysis, matching, ATS gaps | Add explainable analysis services and deterministic scoring contracts. |
 | 8–9 | Roadmaps and project recommendations | Add recommendation services with transparent inputs and citations. |
@@ -57,4 +61,4 @@ The application will return meaningful HTTP status codes and problem-oriented er
 
 ## Decisions made now
 
-The frontend is **Next.js with TypeScript and Tailwind CSS** as requested. The backend is **FastAPI with Pydantic and SQLAlchemy-ready modules**. PostgreSQL is deliberately deferred until Phase 2 to preserve the requested sequence. The project does not add Docker, OCR, embeddings, an LLM API client, or a database schema in this phase.
+The frontend is **Next.js with TypeScript and Tailwind CSS** as requested. The backend is **FastAPI with Pydantic, SQLAlchemy, Alembic, and a PostgreSQL connection boundary**. Database credentials are runtime-only through `DATABASE_URL`. The project deliberately does not add document upload/parsing, matching execution, embeddings, OCR, an LLM API client, authentication, or Docker in Phase 2.
