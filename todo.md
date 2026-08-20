@@ -38,3 +38,9 @@
 - [ ] Configure a local development PostgreSQL connection exclusively through environment variables when supported. *(Blocked: no local PostgreSQL client/server is installed, and the injected DATABASE_URL is not PostgreSQL.)*
 - [ ] Apply migration `20260820_0001` and verify all seven Phase 2 tables. *(Blocked pending a reachable PostgreSQL DATABASE_URL.)*
 - [x] Rerun database tests and report the concrete connection, migration, table, and test status.
+
+## Current Work — Windows 11 PostgreSQL Guide
+
+- [x] Review the existing database documentation and configuration conventions.
+- [x] Add a Windows 11 PostgreSQL installation, database/user creation, `.env`, migration, verification, and troubleshooting guide.
+- [x] Confirm that the guide contains no real credentials and does not alter Phase 2 code or start Phase 3.

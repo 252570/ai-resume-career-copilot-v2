@@ -64,6 +64,8 @@ The required `DATABASE_URL` uses the PostgreSQL Psycopg scheme below. Production
 postgresql+psycopg://career_copilot:<local-password>@localhost:5432/career_copilot
 ```
 
+For a step-by-step local setup on Windows, including PostgreSQL installation, role/database creation, `.env` configuration, Alembic migration, seven-table verification, and troubleshooting, see [Windows 11 PostgreSQL Setup Guide](./WINDOWS_11_POSTGRESQL_SETUP.md).
+
 ## Database models
 
 | Model | Purpose | Key relationship or integrity rule |
