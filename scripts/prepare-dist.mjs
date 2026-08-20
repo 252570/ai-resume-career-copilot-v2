@@ -17,6 +17,7 @@ const standaloneNodeModulesDirectory = path.join(standaloneDirectory, "node_modu
 const staticDirectory = path.join(nextDirectory, "static");
 const publicDirectory = path.join(frontendDirectory, "public");
 const distDirectory = path.join(repositoryRoot, "dist");
+const deploymentConfigTemplate = path.join(repositoryRoot, "deploy", "project-config.template.json");
 
 async function copyIfPresent(source, destination) {
   try {
@@ -40,8 +41,9 @@ async function prepareDeploymentArtifact() {
   await mkdir(path.join(distDirectory, ".next"), { recursive: true });
   await copyIfPresent(staticDirectory, path.join(distDirectory, ".next", "static"));
   await copyIfPresent(publicDirectory, distDirectory);
+  await cp(deploymentConfigTemplate, path.join(distDirectory, ".project-config.json"));
 
-  console.log("Prepared deployment artifact: dist/server.js");
+  console.log("Prepared deployment artifact: dist/server.js and dist/.project-config.json");
 }
 
 prepareDeploymentArtifact().catch((error) => {

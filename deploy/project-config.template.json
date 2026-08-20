@@ -1,0 +1,11 @@
+{
+  "name": "ai-resume-career-copilot-v2",
+  "build_command": "pnpm run build",
+  "dev_command": "pnpm run dev",
+  "test_command": "pnpm test",
+  "port": 3000,
+  "capabilities": [],
+  "env_vars": {},
+  "experiments": null,
+  "template_id": "web-static"
+}
