@@ -5,6 +5,12 @@
 - [x] Reproduce the cloud deployment build from the frozen root workspace dependency graph.
 - [x] Confirm the corrected production build succeeds and document the recovery.
 
+## Current Work — Deployment Artifact Recovery
+
+- [x] Inspect the current Next.js output and root deployment artifact expectation.
+- [x] Configure the frontend to emit a deployable standalone artifact into root `dist/`.
+- [x] Verify the root build creates `dist/` and that the standalone server starts successfully.
+
 ## Deferred Phase 2 — PostgreSQL Database Foundation
 
 - [ ] Inspect the Phase 1 backend, dependency state, and PostgreSQL availability.
