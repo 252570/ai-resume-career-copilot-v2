@@ -4,11 +4,11 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "dev": "pnpm --dir frontend dev",
-    "build": "pnpm --dir frontend build",
-    "start": "pnpm --dir frontend start",
-    "check": "pnpm --dir frontend check",
-    "test": "pnpm --dir frontend test",
+    "dev": "pnpm --filter career-copilot-frontend dev",
+    "build": "pnpm --filter career-copilot-frontend build",
+    "start": "pnpm --filter career-copilot-frontend start",
+    "check": "pnpm --filter career-copilot-frontend check",
+    "test": "pnpm --filter career-copilot-frontend test",
     "backend:dev": "cd backend && python3 -m uvicorn app.main:app --reload --port 8000",
     "backend:test": "cd backend && python3 -m pytest",
     "format": "prettier --write ."

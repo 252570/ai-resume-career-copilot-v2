@@ -1,0 +1,8 @@
+packages:
+  - "frontend"
+
+# Next.js includes Sharp as an optional image dependency. Allow its installer
+# during root workspace installs so the client has the same dependency graph
+# in local verification and cloud builds.
+onlyBuiltDependencies:
+  - sharp
