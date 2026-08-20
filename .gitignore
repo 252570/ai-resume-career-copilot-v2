@@ -111,3 +111,13 @@ temp/
 # Manus version file (auto-generated, not part of source)
 client/public/__manus__/version.json
 .project-config.json
+
+# AI Resume & Career Copilot workspace
+frontend/node_modules/
+frontend/.next/
+backend/.venv/
+backend/.pytest_cache/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/.coverage
+backend/htmlcov/

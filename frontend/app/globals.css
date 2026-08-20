@@ -1,0 +1,103 @@
+/*
+ * Quiet Signal Studio visual contract: contemporary editorial minimalism,
+ * document-and-rail composition, paper warmth, ink-blue type, and vermilion
+ * only for directional emphasis. Avoid centered dashboard clichés.
+ */
+@import "tailwindcss";
+
+:root {
+  --paper: #f6f3eb;
+  --paper-strong: #efeadf;
+  --ink: #142b45;
+  --ink-soft: #516173;
+  --rule: #d7d1c4;
+  --signal: #df4d34;
+  --signal-pale: #f6ded7;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-sans), Arial, sans-serif; }
+main { overflow: hidden; }
+.site-header, .hero, .content-grid, .architecture-strip, footer { max-width: 1440px; margin: 0 auto; }
+.site-header { align-items: center; display: flex; justify-content: space-between; min-height: 92px; padding: 20px clamp(24px, 5vw, 74px); }
+.brand, .footer-brand { align-items: center; color: var(--ink); display: inline-flex; gap: 12px; text-decoration: none; }
+.mark { background: var(--ink); border-radius: 2px 12px 2px 2px; display: inline-grid; height: 50px; overflow: hidden; place-items: center; position: relative; width: 50px; }
+.mark img { height: 100%; object-fit: cover; width: 100%; }
+.mark::after { border-left: 8px solid transparent; border-top: 8px solid var(--signal); content: ""; position: absolute; right: 0; top: 0; }
+.mark-fallback { border: 1px solid rgb(248 245 238 / 82%); height: 22px; position: relative; transform: rotate(-12deg); width: 17px; }
+.mark-fallback::before { background: #f8f5ee; clip-path: polygon(0 45%, 100% 0, 61% 100%, 47% 61%); content: ""; height: 17px; left: 6px; position: absolute; top: 2px; transform: rotate(18deg); width: 17px; }
+.mark-fallback::after { background: var(--signal); content: ""; height: 3px; left: 2px; position: absolute; top: 16px; width: 23px; }
+.brand strong { display: block; font-size: 12px; font-weight: 800; letter-spacing: .045em; line-height: 1.05; text-transform: uppercase; }
+.brand small { display: block; color: var(--ink-soft); font-size: 10px; letter-spacing: .085em; margin-top: 3px; text-transform: uppercase; }
+.header-status, .eyebrow, .module-status, .image-caption { font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.header-status { align-items: center; color: var(--ink-soft); display: flex; gap: 9px; }
+.header-status span { background: var(--signal); border-radius: 50%; display: inline-block; height: 7px; width: 7px; }
+.hero { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); min-height: 595px; }
+.hero-copy { align-self: center; padding: 70px clamp(24px, 7vw, 110px) 70px clamp(24px, 5vw, 74px); }
+.eyebrow { color: var(--signal); margin: 0 0 20px; }
+h1, h2, h3, p { margin-top: 0; }
+h1, h2 { font-family: var(--font-display), Georgia, serif; font-weight: 400; }
+h1 { font-size: clamp(48px, 5.3vw, 86px); letter-spacing: -.055em; line-height: .95; margin-bottom: 29px; max-width: 620px; }
+h1 em, h2 em { color: var(--signal); font-style: normal; }
+.lede { color: var(--ink-soft); font-size: clamp(15px, 1.45vw, 19px); line-height: 1.75; max-width: 555px; }
+.hero-note { align-items: flex-start; border-top: 1px solid var(--rule); display: flex; gap: 13px; margin-top: 42px; max-width: 550px; padding-top: 17px; }
+.hero-note p { color: var(--ink-soft); font-size: 12px; line-height: 1.6; margin: 0; }
+.hero-note strong { color: var(--ink); }
+.note-line { background: var(--signal); display: block; flex: 0 0 34px; height: 2px; margin-top: 9px; }
+.direction-index, .strip-direction { align-items: center; color: var(--ink-soft); display: flex; font-size: 9px; font-weight: 800; gap: 10px; letter-spacing: .13em; margin-top: 27px; text-transform: uppercase; }
+.direction-index i, .strip-direction i { background: var(--signal); display: block; height: 2px; position: relative; width: 54px; }
+.direction-index i::after, .strip-direction i::after { border-bottom: 4px solid transparent; border-left: 6px solid var(--signal); border-top: 4px solid transparent; content: ""; position: absolute; right: -1px; top: -3px; }
+.hero-image { background: linear-gradient(135deg, rgb(246 243 235 / 18%), rgb(20 43 69 / 25%)), url("/manus-storage/copilot-hero-architecture_5d52f59a.jpg") center / cover; min-height: 500px; overflow: hidden; position: relative; }
+.hero-image::after { background: linear-gradient(90deg, rgb(246 243 235 / 26%), transparent 44%); content: ""; inset: 0; position: absolute; }
+.dossier-sheet { background: rgb(246 243 235 / 90%); box-shadow: 0 24px 50px rgb(20 43 69 / 18%); color: var(--ink); display: flex; flex-direction: column; justify-content: space-between; padding: 24px; position: absolute; text-transform: uppercase; z-index: 1; }
+.dossier-sheet span { font-size: 9px; font-weight: 800; letter-spacing: .15em; }
+.dossier-sheet b { color: var(--signal); font-family: var(--font-display), Georgia, serif; font-size: 70px; font-weight: 400; letter-spacing: -.06em; line-height: .8; }
+.dossier-sheet i { background: var(--ink); display: block; height: 1px; position: relative; }
+.dossier-sheet i::before { background: var(--signal); content: ""; height: 3px; left: 0; position: absolute; top: -1px; width: 42%; }
+.sheet-one { height: 245px; right: 13%; top: 13%; transform: rotate(7deg); width: 190px; }
+.sheet-two { background: var(--ink); bottom: 16%; color: #f8f5ee; height: 185px; right: 38%; transform: rotate(-8deg); width: 150px; }
+.sheet-two i { background: #f8f5ee; }.sheet-two b { color: #f08e7d; }
+.compass-stamp { bottom: 12%; left: 12%; position: absolute; transform: rotate(-12deg); z-index: 2; }.compass-stamp .mark { height: 68px; width: 68px; }
+.image-caption { align-items: center; background: var(--ink); bottom: 0; color: #fff; display: flex; gap: 9px; left: 0; padding: 16px 23px; position: absolute; z-index: 1; }
+.content-grid { border-top: 1px solid var(--rule); display: grid; grid-template-columns: minmax(260px, .45fr) minmax(0, 1.55fr); }
+.phase-rail { border-right: 1px solid var(--rule); padding: 70px clamp(24px, 5vw, 74px); }
+.phase-rail .eyebrow { color: var(--ink-soft); }
+.rail-line { background: var(--rule); height: 1px; margin: 30px 0 19px; position: relative; }
+.rail-line span { background: var(--signal); height: 3px; left: 0; position: absolute; top: -1px; width: 48%; }
+.phase-number { color: var(--signal); font-family: var(--font-display), Georgia, serif; font-size: 62px; letter-spacing: -.05em; line-height: 1; }
+.phase-rail h2 { font-size: 32px; letter-spacing: -.04em; line-height: 1.05; margin: 14px 0 16px; }
+.phase-rail > p:not(.eyebrow) { color: var(--ink-soft); font-size: 13px; line-height: 1.7; max-width: 230px; }
+dl { border-top: 1px solid var(--rule); margin: 30px 0 0; padding: 14px 0 0; }
+dl div { display: flex; font-size: 10px; justify-content: space-between; letter-spacing: .07em; margin: 11px 0; text-transform: uppercase; }
+dt { color: var(--ink-soft); } dd { font-weight: 700; margin: 0; }
+.modules { padding: 70px clamp(24px, 6vw, 100px); }
+.section-heading { align-items: flex-end; display: flex; gap: 30px; justify-content: space-between; margin-bottom: 50px; }
+.section-heading .eyebrow { margin-bottom: 13px; }
+.section-heading h2 { font-size: clamp(34px, 3.4vw, 52px); letter-spacing: -.05em; line-height: 1; margin: 0; max-width: 620px; }
+.section-caption { color: var(--ink-soft); font-size: 12px; line-height: 1.5; margin: 0 0 5px; max-width: 180px; }
+.module-list { border-top: 1px solid var(--ink); }
+.module { align-items: flex-start; border-bottom: 1px solid var(--rule); display: grid; gap: 20px; grid-template-columns: 42px minmax(0, 1fr) 100px; padding: 25px 0; transition: background-color 180ms ease, transform 180ms cubic-bezier(.23,1,.32,1); }
+.module:hover { background-color: rgb(255 255 255 / 40%); transform: translateX(4px); }
+.module-index { color: var(--ink-soft); font-size: 11px; font-weight: 800; padding-top: 5px; }
+.module h3 { font-size: 16px; letter-spacing: -.02em; margin: 0 0 7px; }
+.module p { color: var(--ink-soft); font-size: 13px; line-height: 1.65; margin: 0; max-width: 580px; }
+.module-status { color: var(--ink-soft); padding-top: 6px; text-align: right; }
+.module.current .module-index, .module.current .module-status { color: var(--signal); }
+.architecture-strip { align-items: stretch; border-top: 1px solid var(--rule); display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(260px, .85fr); }
+.architecture-copy { background: var(--ink); color: #f8f5ee; padding: clamp(52px, 7vw, 100px); }
+.architecture-copy .eyebrow { color: #f08e7d; }
+.architecture-copy h2 { font-size: clamp(34px, 4.2vw, 58px); letter-spacing: -.05em; line-height: .98; margin-bottom: 26px; max-width: 670px; }
+.architecture-copy h2 em { color: #f08e7d; }
+.architecture-copy > p:last-child { color: #c6d0da; font-size: 14px; line-height: 1.75; max-width: 525px; }
+.strip-direction { color: #c6d0da; margin-top: 36px; }.strip-direction i { background: #f08e7d; }.strip-direction i::after { border-left-color: #f08e7d; }
+.signal-image { background: linear-gradient(35deg, rgb(20 43 69 / 18%), transparent 60%), url("/manus-storage/copilot-skills-signal_4f41c6ff.jpg") center / cover; min-height: 390px; overflow: hidden; position: relative; }
+.signal-image::before, .signal-image::after { background: rgb(246 243 235 / 88%); box-shadow: 0 18px 34px rgb(20 43 69 / 16%); content: ""; height: 150px; position: absolute; width: 210px; }.signal-image::before { left: 17%; top: 15%; transform: rotate(-8deg); }.signal-image::after { bottom: 10%; right: 10%; transform: rotate(10deg); }
+.signal-label { color: var(--ink); font-size: 10px; font-weight: 800; letter-spacing: .14em; position: absolute; text-transform: uppercase; z-index: 1; }.signal-label.top { left: 24%; top: 25%; }.signal-label.bottom { bottom: 24%; right: 17%; }.signal-route { background: var(--signal); height: 3px; left: 32%; position: absolute; top: 53%; transform: rotate(31deg); width: 42%; z-index: 2; }.signal-route::after { border-bottom: 6px solid transparent; border-left: 9px solid var(--signal); border-top: 6px solid transparent; content: ""; position: absolute; right: -2px; top: -5px; }
+footer { align-items: center; background: var(--paper-strong); color: var(--ink-soft); display: flex; font-size: 11px; justify-content: space-between; letter-spacing: .08em; padding: 35px clamp(24px, 5vw, 74px); text-transform: uppercase; }
+.footer-brand { color: var(--ink); font-size: 10px; font-weight: 800; letter-spacing: .1em; }
+.footer-brand .mark { height: 38px; width: 38px; }
+footer p { margin: 0; }
+@media (max-width: 820px) { .site-header { min-height: 74px; } .header-status { font-size: 8px; } .hero, .content-grid, .architecture-strip { grid-template-columns: 1fr; } .hero-copy { padding-bottom: 45px; padding-top: 62px; } .hero-image { min-height: 380px; } .sheet-one { right: 12%; }.sheet-two { right: 44%; }.phase-rail { border-bottom: 1px solid var(--rule); border-right: 0; padding-bottom: 45px; padding-top: 48px; } .phase-rail > p:not(.eyebrow) { max-width: 450px; } .modules { padding-bottom: 52px; padding-top: 52px; } .section-heading { align-items: flex-start; flex-direction: column; gap: 18px; margin-bottom: 35px; } .section-caption { max-width: 300px; } .signal-image { min-height: 300px; } }
+@media (max-width: 520px) { .brand small { display: none; } .header-status { max-width: 134px; text-align: right; } h1 { font-size: 50px; } .module { grid-template-columns: 34px 1fr; } .module-status { grid-column: 2; padding-top: 0; text-align: left; } footer { align-items: flex-start; flex-direction: column; gap: 18px; } }
+@media (prefers-reduced-motion: no-preference) { .hero-copy { animation: rise-in 600ms cubic-bezier(.23,1,.32,1) both; } .hero-image { animation: fade-in 750ms 90ms cubic-bezier(.23,1,.32,1) both; } @keyframes rise-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } } @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } } }
