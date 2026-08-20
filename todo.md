@@ -31,3 +31,10 @@
 - [x] Configure Alembic and create an initial PostgreSQL migration.
 - [x] Verify PostgreSQL migration SQL generation, database configuration, model behavior, backend tests, and the untouched frontend build.
 - [x] Update database setup documentation and stop for Phase 3 approval.
+
+## Current Work — Phase 2 PostgreSQL Runtime Verification
+
+- [x] Inspect current migration configuration and local PostgreSQL client/server availability.
+- [ ] Configure a local development PostgreSQL connection exclusively through environment variables when supported. *(Blocked: no local PostgreSQL client/server is installed, and the injected DATABASE_URL is not PostgreSQL.)*
+- [ ] Apply migration `20260820_0001` and verify all seven Phase 2 tables. *(Blocked pending a reachable PostgreSQL DATABASE_URL.)*
+- [x] Rerun database tests and report the concrete connection, migration, table, and test status.

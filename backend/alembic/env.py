@@ -7,6 +7,7 @@ from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
+from sqlalchemy.engine import make_url
 
 from app.db.base import Base
 from app.models import Job, JobSkill, MatchResult, Resume, ResumeSkill, Skill, User  # noqa: F401
@@ -21,7 +22,12 @@ target_metadata = Base.metadata
 
 def get_database_url() -> str:
     """Prefer the deployment environment and retain an inert local Alembic fallback."""
-    return os.getenv("DATABASE_URL") or config.get_main_option("sqlalchemy.url")
+    database_url = os.getenv("DATABASE_URL") or config.get_main_option("sqlalchemy.url")
+    if not make_url(database_url).drivername.startswith("postgresql"):
+        raise RuntimeError(
+            "DATABASE_URL must use a PostgreSQL connection scheme before Alembic can apply this migration."
+        )
+    return database_url
 
 
 def run_migrations_offline() -> None:
