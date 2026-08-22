@@ -6,7 +6,7 @@
  */
 import { ChangeEvent, FormEvent, useRef, useState } from "react";
 
-import { ParsedResume, ResumeApiError, UploadedResume, uploadResume } from "../lib/api";
+import { isResumeApiConfigured, ParsedResume, ResumeApiError, UploadedResume, uploadResume } from "../lib/api";
 
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 const ACCEPTED_SUFFIXES = [".pdf", ".docx", ".txt"];
@@ -55,6 +55,7 @@ export function ResumeUploadPanel() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<UploadedResume | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const apiConfigured = isResumeApiConfigured;
 
   const selectFile = (file: File | null) => {
     setError(null);
@@ -112,6 +113,11 @@ export function ResumeUploadPanel() {
 
       <div className="upload-workspace">
         <form className="upload-form" onSubmit={onSubmit}>
+          {!apiConfigured && (
+            <p className="local-only-note" role="status">
+              <strong>Local API configuration required.</strong> This managed preview does not host the separate FastAPI service. To upload locally, create <code>frontend/.env.local</code> with <code>NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8001/api/v1</code>, then run FastAPI on port 8001.
+            </p>
+          )}
           <input ref={inputRef} className="file-input" id="resume-file" type="file" accept=".pdf,.docx,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={onFileChange} />
           <label className={`drop-zone ${selectedFile ? "has-file" : ""}`} htmlFor="resume-file">
             <span className="file-corner" aria-hidden="true" />
@@ -120,7 +126,7 @@ export function ResumeUploadPanel() {
             <small>{selectedFile ? `${Math.max(1, Math.ceil(selectedFile.size / 1024))} KB selected` : "PDF, DOCX, or TXT · up to 5 MB"}</small>
           </label>
           <div className="form-actions">
-            <button className="signal-button" type="submit" disabled={isUploading}>{isUploading ? "Reading evidence…" : "Upload & parse"}</button>
+            <button className="signal-button" type="submit" disabled={isUploading || !apiConfigured}>{isUploading ? "Reading evidence…" : apiConfigured ? "Upload & parse" : "Local API required"}</button>
             <button className="quiet-button" type="button" disabled={isUploading} onClick={() => { setSelectedFile(null); setResult(null); setError(null); if (inputRef.current) inputRef.current.value = ""; }}>Clear</button>
           </div>
           {error && <p className="upload-error" role="alert">{error}</p>}

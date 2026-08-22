@@ -27,9 +27,21 @@ export class ResumeApiError extends Error {
   }
 }
 
-const apiBaseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8001/api/v1").replace(/\/$/, "");
+const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+
+export const isResumeApiConfigured = Boolean(configuredApiBaseUrl);
+
+export function getResumeApiBaseUrl(): string | null {
+  return configuredApiBaseUrl ? configuredApiBaseUrl.replace(/\/$/, "") : null;
+}
 
 export async function uploadResume(file: File): Promise<UploadedResume> {
+  const apiBaseUrl = getResumeApiBaseUrl();
+  if (!apiBaseUrl) {
+    throw new ResumeApiError(
+      "Resume uploads are configured for local development only. Set NEXT_PUBLIC_API_BASE_URL in frontend/.env.local and run FastAPI on port 8001.",
+    );
+  }
   const payload = new FormData();
   payload.append("file", file);
 
@@ -37,7 +49,7 @@ export async function uploadResume(file: File): Promise<UploadedResume> {
   try {
     response = await fetch(`${apiBaseUrl}/resumes/upload`, { method: "POST", body: payload });
   } catch {
-    throw new ResumeApiError("The resume service could not be reached. Confirm that FastAPI is running on port 8001.");
+    throw new ResumeApiError("The configured resume service could not be reached. Confirm FastAPI is running and NEXT_PUBLIC_API_BASE_URL is correct.");
   }
 
   const body = await response.json().catch(() => ({}));

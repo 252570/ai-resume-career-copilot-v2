@@ -119,6 +119,8 @@ Set the frontend API boundary in a private `frontend/.env.local` file:
 NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8001/api/v1
 ```
 
+> The managed Manus preview hosts the Next.js frontend only; it does not deploy this separate Python FastAPI service. Resume uploads are therefore intentionally unavailable in the managed preview under the selected local-development-only configuration. To test upload and parsing, run the frontend at `http://localhost:3000` and FastAPI at `http://127.0.0.1:8001` on the same machine with the environment variable above.
+
 Set backend values in a private `backend/.env` file. `DATABASE_URL` remains environment-only; `RESUME_STORAGE_DIR=storage/resumes` and `CORS_ORIGINS=http://localhost:3000` are safe local defaults.
 
 ## Verification commands

@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
     database_url: str | None = None
     database_echo: bool = False
-    cors_origins: str = "http://localhost:3000"
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
     resume_storage_dir: Path = Path("storage/resumes")
     max_resume_upload_bytes: int = 5 * 1024 * 1024
 

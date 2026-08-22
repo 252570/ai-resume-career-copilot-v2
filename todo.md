@@ -64,3 +64,17 @@
 - [x] Inspect the authoritative managed project configuration and deployment template contract.
 - [x] Repair the project-level deployment configuration with a tracked credential-free root contract.
 - [x] Verify the corrected root and dist deployment contract while preserving Phase 3 behavior.
+
+## Current Work — Phase 3 Managed Backend Connectivity
+
+- [ ] Inspect the current API base URL, CORS settings, managed runtime capabilities, and viable FastAPI deployment path.
+- [ ] Deploy or host the existing FastAPI service at a reachable backend URL without changing upload/parsing features.
+- [ ] Configure environment-driven frontend API access and narrow CORS to the managed frontend origin plus localhost development.
+- [ ] Verify live health and upload behavior from managed preview, then rerun backend tests and frontend build/type-check.
+
+## Current Work — Local-Only FastAPI Connectivity
+
+- [x] Inspect the API client, upload feedback, and local environment documentation.
+- [x] Require `NEXT_PUBLIC_API_BASE_URL` for uploads instead of using a hosted localhost fallback.
+- [x] Present an explicit managed-preview limitation while preserving local `127.0.0.1:8001` operation via environment configuration.
+- [x] Run backend tests, frontend build/type-check, visual verification, and documentation update; stop.
