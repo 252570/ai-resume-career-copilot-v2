@@ -5,8 +5,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "pnpm --filter career-copilot-frontend dev",
-    "build": "pnpm --filter career-copilot-frontend build && node scripts/prepare-dist.mjs",
-    "start": "NODE_ENV=production node dist/server.js",
+    "build": "pnpm --filter career-copilot-frontend build && node scripts/prepare-static-dist.mjs && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "start": "NODE_ENV=production node dist/index.js",
     "check": "pnpm --filter career-copilot-frontend check",
     "test": "pnpm --filter career-copilot-frontend test",
     "backend:dev": "cd backend && python3 -m uvicorn app.main:app --reload --port 8000",

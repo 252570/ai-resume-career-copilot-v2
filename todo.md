@@ -78,3 +78,21 @@
 - [x] Require `NEXT_PUBLIC_API_BASE_URL` for uploads instead of using a hosted localhost fallback.
 - [x] Present an explicit managed-preview limitation while preserving local `127.0.0.1:8001` operation via environment configuration.
 - [x] Run backend tests, frontend build/type-check, visual verification, and documentation update; stop.
+
+## Current Work — Final Managed Template Compatibility Diagnosis
+
+- [x] Inspect the template identity, project runtime contract, and deployment validator inputs.
+- [x] Confirm that no artifact-only correction can make the immutable `web-static` Vite contract accept a Next.js runtime.
+- [x] Document the platform limitation and request approval for a supported deployment migration.
+
+## Current Work — Phase 3 GitHub Synchronization
+
+- [x] Inspect local branch, connected remote, working tree, and required Phase 3 files.
+- [x] Verify the existing Phase 3 checkpoint commit preserves Phase 2 and includes all required Phase 3 implementation files.
+- [x] Confirm the connected GitHub `main` branch points to the Phase 3 commit and includes migration `20260822_0002` and upload UI files.
+
+## Current Work — Static Template Deployment Contract Restoration
+
+- [x] Compare the current custom deployment metadata with the original managed web-static template contract.
+- [x] Remove incompatible custom project/deployment configuration while preserving application functionality.
+- [x] Rebuild and verify the restored `dist/index.js` and `dist/public/index.html` artifact contract with a successful HTTP 200 runtime check.

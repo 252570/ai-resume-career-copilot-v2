@@ -122,3 +122,5 @@ backend/storage/resumes/*
 !backend/storage/resumes/.gitkeep
 backend/.coverage
 backend/htmlcov/
+# Manus maintains this runtime metadata outside the repository.
+.project-config.json
