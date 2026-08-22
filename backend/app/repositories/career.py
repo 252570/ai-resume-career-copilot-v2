@@ -23,6 +23,11 @@ class CareerRepository:
     def get_resume(self, resume_id: UUID) -> Resume | None:
         return self.session.get(Resume, resume_id)
 
+    def add_resume(self, resume: Resume) -> Resume:
+        """Stage a new resume record; callers own commit and rollback boundaries."""
+        self.session.add(resume)
+        return resume
+
     def get_job(self, job_id: UUID) -> Job | None:
         return self.session.get(Job, job_id)
 

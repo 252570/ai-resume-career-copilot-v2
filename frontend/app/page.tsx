@@ -4,19 +4,20 @@
  * named transparently but never presented as available controls.
  */
 import { BrandMark } from "./components/BrandMark";
+import { ResumeUploadPanel } from "./components/ResumeUploadPanel";
 
 const modules = [
   {
     index: "01",
     title: "Foundation",
-    description: "Standalone frontend and API boundaries, tested health contract, and environment conventions.",
-    status: "Active now",
+    description: "Standalone frontend and API boundaries, health contract, persistence conventions, and verified database migrations.",
+    status: "Established",
   },
   {
     index: "02",
     title: "Career evidence",
-    description: "Resume capture, parsing, and structured experience extraction will be introduced only in later phases.",
-    status: "Deferred",
+    description: "Secure resume capture and deterministic parsing surface the source evidence needed for future decision support.",
+    status: "Active now",
   },
   {
     index: "03",
@@ -41,7 +42,7 @@ export default function Home() {
             <small>Career Copilot</small>
           </span>
         </a>
-        <p className="header-status"><span /> Phase 01 / Architecture</p>
+        <p className="header-status"><span /> Phase 03 / Resume parsing</p>
       </header>
 
       <section className="hero" id="overview">
@@ -49,11 +50,11 @@ export default function Home() {
           <p className="eyebrow">A career intelligence platform, assembled deliberately</p>
           <h1>Make your next career move <em>legible.</em></h1>
           <p className="lede">
-            AI Resume &amp; Career Copilot will turn resume evidence and job requirements into an explainable path forward. The first layer is now in place.
+            AI Resume &amp; Career Copilot turns resume evidence and job requirements into an explainable path forward. The source-evidence layer is now ready to receive a resume.
           </p>
           <div className="hero-note">
             <span className="note-line" />
-            <p><strong>Phase 1 complete in scope.</strong> The current workspace contains only the architecture, app shells, configuration boundaries, and starter tests needed to proceed responsibly.</p>
+            <p><strong>Evidence first.</strong> Upload parsing is available now; job matching, recommendations, and AI-led guidance remain deliberately out of scope.</p>
           </div>
           <div className="direction-index" aria-label="Evidence becomes a career decision">
             <span>Source evidence</span><i aria-hidden="true" /><span>Career decision</span>
@@ -92,7 +93,7 @@ export default function Home() {
 
           <div className="module-list">
             {modules.map((module) => (
-              <article className={`module ${module.index === "01" ? "current" : ""}`} key={module.index}>
+              <article className={`module ${module.index === "02" ? "current" : ""}`} key={module.index}>
                 <span className="module-index">{module.index}</span>
                 <div>
                   <h3>{module.title}</h3>
@@ -104,6 +105,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <ResumeUploadPanel />
 
       <section className="architecture-strip">
         <div className="architecture-copy">
@@ -119,7 +122,7 @@ export default function Home() {
 
       <footer>
         <div className="footer-brand"><CompassMark /><span>AI Resume &amp; Career Copilot</span></div>
-        <p>Phase 1 — architecture &amp; setup only</p>
+        <p>Phase 3 — resume upload &amp; parsing</p>
       </footer>
     </main>
   );

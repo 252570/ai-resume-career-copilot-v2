@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from app.core.config import get_settings
 
@@ -16,14 +17,18 @@ def get_engine(database_url: str | None = None) -> Engine:
     """Create a cached engine only when a database-backed operation needs one."""
     resolved_url = database_url or get_settings().require_database_url()
     connect_args: dict[str, object] = {}
+    engine_options: dict[str, object] = {}
     if resolved_url.startswith("sqlite"):
         connect_args = {"check_same_thread": False}
+        if resolved_url.endswith(":memory:"):
+            engine_options["poolclass"] = StaticPool
     return create_engine(
         resolved_url,
         connect_args=connect_args,
         echo=get_settings().database_echo,
         future=True,
         pool_pre_ping=not resolved_url.startswith("sqlite"),
+        **engine_options,
     )
 
 

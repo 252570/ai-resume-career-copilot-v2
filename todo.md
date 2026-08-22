@@ -44,3 +44,11 @@
 - [x] Review the existing database documentation and configuration conventions.
 - [x] Add a Windows 11 PostgreSQL installation, database/user creation, `.env`, migration, verification, and troubleshooting guide.
 - [x] Confirm that the guide contains no real credentials and does not alter Phase 2 code or start Phase 3.
+
+## Current Work — Phase 3 Resume Upload and Parsing
+
+- [x] Inspect the existing backend, Resume schema/migration, frontend structure, and current dependencies.
+- [x] Define secure PDF/DOCX/TXT upload validation, local storage, deterministic parsing, and persistence boundaries.
+- [x] Implement upload and retrieval APIs with focused schema changes, error handling, storage safety, and tests.
+- [x] Implement the existing-design-compatible frontend upload and parsed-result experience through a centralized API configuration.
+- [x] Verify migration DDL, backend tests, frontend build, preserved UI, and Phase 3 documentation.

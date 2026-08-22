@@ -1,6 +1,7 @@
 """Validated environment configuration; secrets never belong in source code."""
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -16,6 +17,8 @@ class Settings(BaseSettings):
     database_url: str | None = None
     database_echo: bool = False
     cors_origins: str = "http://localhost:3000"
+    resume_storage_dir: Path = Path("storage/resumes")
+    max_resume_upload_bytes: int = 5 * 1024 * 1024
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -34,6 +37,10 @@ class Settings(BaseSettings):
         if not self.database_url.startswith(("postgresql://", "postgresql+psycopg://")):
             raise DatabaseConfigurationError("DATABASE_URL must use a PostgreSQL connection scheme.")
         return self.database_url
+
+    def allowed_cors_origins(self) -> list[str]:
+        """Return a non-empty, explicitly configured CORS origin list."""
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
 
 
 @lru_cache

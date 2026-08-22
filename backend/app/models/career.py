@@ -42,7 +42,7 @@ class Resume(TimestampMixin, Base):
     )
 
     id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
-    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)
     title: Mapped[str] = mapped_column(String(160), nullable=False)
     original_filename: Mapped[str | None] = mapped_column(String(255))
     storage_key: Mapped[str | None] = mapped_column(String(512), unique=True)
@@ -50,6 +50,8 @@ class Resume(TimestampMixin, Base):
     byte_size: Mapped[int | None] = mapped_column(Integer)
     checksum_sha256: Mapped[str | None] = mapped_column(String(64), index=True)
     status: Mapped[str] = mapped_column(String(32), server_default="pending", nullable=False)
+    extracted_text: Mapped[str | None] = mapped_column(Text)
+    parsed_data: Mapped[dict[str, object] | None] = mapped_column(JSON().with_variant(JSONB, "postgresql"))
 
     user: Mapped[User] = relationship(back_populates="resumes")
     skills: Mapped[list[ResumeSkill]] = relationship(back_populates="resume", cascade="all, delete-orphan")

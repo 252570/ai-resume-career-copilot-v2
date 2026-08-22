@@ -1,16 +1,17 @@
 # AI Resume & Career Copilot
 
-AI Resume & Career Copilot is a production-oriented final-year project that will help users understand how their resume aligns with a target job and what practical steps can close the gap. This repository is deliberately being built in phases. **Phase 2 adds only the PostgreSQL data foundation; it does not implement resume upload/parsing, matching, AI analysis, or authentication flows.**
+AI Resume & Career Copilot is a production-oriented final-year project that will help users understand how their resume aligns with a target job and what practical steps can close the gap. This repository is deliberately being built in phases. **Phase 3 adds secure resume upload and deterministic parsing only; matching, AI analysis, roadmaps, and authentication remain out of scope.**
 
-## Phase 2 status
+## Phase 3 status
 
 | Area | Status | What exists now |
 | --- | --- | --- |
 | Repository architecture | Complete | Separate `frontend/`, `backend/`, documentation, environment templates, and test foundations. |
-| Frontend | Complete | Next.js, TypeScript, Tailwind CSS, and a responsive phase-status landing screen. |
-| Backend | Complete | FastAPI application factory, versioned health route, typed configuration boundary, and tests. |
-| Database | Complete | PostgreSQL-ready SQLAlchemy models, Alembic migration, Pydantic contracts, repository boundary, and test-safe sessions. |
-| Career capabilities | Deferred | Resume ingestion, job analysis, matching, ATS gaps, roadmaps, recommendations, RAG, interviews, and tracking are not yet implemented. |
+| Frontend | Complete | Next.js, TypeScript, Tailwind CSS, and a responsive resume upload plus parsed-evidence interface. |
+| Backend | Complete | FastAPI health, upload, and retrieval routes with strict validation, restricted CORS, and controlled errors. |
+| Database | Complete | PostgreSQL-ready SQLAlchemy persistence and Alembic migrations through `20260822_0002`. |
+| Resume ingestion | Complete | PDF, DOCX, and UTF-8/UTF-16 TXT upload; local development storage; deterministic text and basic signal extraction. |
+| Career capabilities | Deferred | Job analysis, matching, ATS gaps, roadmaps, recommendations, RAG, interviews, tracking, and authentication. |
 
 ## Repository layout
 
@@ -29,11 +30,13 @@ AI Resume & Career Copilot is a production-oriented final-year project that will
 │   │   ├── models/            # SQLAlchemy ORM tables only
 │   │   ├── repositories/      # Persistence access methods
 │   │   ├── schemas/           # Pydantic API contracts only
+│   │   ├── services/          # Upload storage and deterministic document parsing
 │   │   └── main.py            # Application entry point
 │   ├── alembic/               # Versioned PostgreSQL migrations
+│   ├── storage/resumes/        # Local development uploads; contents ignored by Git
 │   ├── alembic.ini
 │   ├── tests/                 # Backend tests
-│   ├── env.example            # Non-secret local configuration template
+│   ├── env.example            # Non-secret backend configuration template
 │   └── requirements.txt
 ├── ARCHITECTURE.md             # Boundary decisions and future extension map
 ├── ideas.md                    # Chosen UI design system for the web client
@@ -78,25 +81,45 @@ For a step-by-step local setup on Windows, including PostgreSQL installation, ro
 | `JobSkill` | Job-to-skill requirement. | Composite primary key; importance is constrained to 1–5. |
 | `MatchResult` | Reserved persistence contract for a future explainable analysis. | One result per resume/job/analysis version; score constrained to 0–100. |
 
-## Local development
+## Phase 3 local development
 
 The commands below assume Node.js 20+ and Python 3.11+.
 
 ```bash
-# Frontend
-cd frontend
+# Frontend (from the project root; PowerShell-compatible)
+Copy-Item frontend/env.example frontend/.env.local
+# Confirm NEXT_PUBLIC_API_BASE_URL in .env.local points to http://127.0.0.1:8001/api/v1
 pnpm install
-pnpm dev
+pnpm.cmd dev
 
 # Backend (in another terminal; configure PostgreSQL first)
 cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+Copy-Item env.example .env
+python -m alembic upgrade head
+python -m uvicorn app.main:app --reload --port 8001
 ```
 
-The frontend runs at `http://localhost:3000` by default. The backend exposes a health check at `http://localhost:8000/api/v1/health` and interactive API documentation at `http://localhost:8000/docs`.
+The frontend runs at `http://localhost:3000` by default. The backend exposes a health check at `http://127.0.0.1:8001/api/v1/health` and interactive API documentation at `http://127.0.0.1:8001/docs`.
+
+## Resume upload API
+
+| Route | Purpose | Constraints |
+| --- | --- | --- |
+| `POST /api/v1/resumes/upload` | Receives multipart field `file`, validates, stores, extracts text, parses basic signals, and persists resume metadata. | PDF, DOCX, or TXT only; maximum 5 MB; returns `201 Created`. |
+| `GET /api/v1/resumes/{resume_id}` | Returns stored resume metadata and parsed evidence. | Does not return binary content or internal filesystem paths. |
+
+The upload response includes a resume ID, original filename, detected MIME type, file size, parsing status, and only observed candidate name, email, phone, LinkedIn, GitHub, skill, education, and experience signals. Missing values remain `null` or empty lists. Uploaded source files are stored in `backend/storage/resumes/` for local development with generated UUID filenames; uploaded contents are ignored by Git and are never stored as database binary columns.
+
+Set the frontend API boundary in a private `frontend/.env.local` file:
+
+```text
+NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8001/api/v1
+```
+
+Set backend values in a private `backend/.env` file. `DATABASE_URL` remains environment-only; `RESUME_STORAGE_DIR=storage/resumes` and `CORS_ORIGINS=http://localhost:3000` are safe local defaults.
 
 ## Verification commands
 
@@ -111,4 +134,4 @@ DATABASE_URL='postgresql+psycopg://career_copilot:placeholder@localhost:5432/car
 
 ## Scope boundary
 
-Phase 2 provides storage metadata and normalized relationship structure only. No resume bytes are stored in the database, no document parser runs, no matching score is computed, and no LLM provider is invoked. See [ARCHITECTURE.md](./ARCHITECTURE.md) for the phased extension plan.
+Phase 3 persists resume metadata, extracted plain text, and deterministic parsed data only. No matching score, job analysis, ATS gap analysis, roadmap, recommendation, authentication, OCR, or LLM provider is implemented. See [ARCHITECTURE.md](./ARCHITECTURE.md) for the phased extension plan.
