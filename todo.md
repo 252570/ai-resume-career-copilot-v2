@@ -58,3 +58,9 @@
 - [x] Inspect the root `dist/` artifact, existing managed configuration files, and packaging script.
 - [x] Correct the configuration template packaging expected by deployment without changing Phase 3 behavior.
 - [x] Rebuild and verify the required configuration aliases and runnable server are present in `dist/`.
+
+## Current Work — Persistent Managed Deployment Error
+
+- [x] Inspect the authoritative managed project configuration and deployment template contract.
+- [x] Repair the project-level deployment configuration with a tracked credential-free root contract.
+- [x] Verify the corrected root and dist deployment contract while preserving Phase 3 behavior.
