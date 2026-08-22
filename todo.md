@@ -96,3 +96,19 @@
 - [x] Compare the current custom deployment metadata with the original managed web-static template contract.
 - [x] Remove incompatible custom project/deployment configuration while preserving application functionality.
 - [x] Rebuild and verify the restored `dist/index.js` and `dist/public/index.html` artifact contract with a successful HTTP 200 runtime check.
+
+## Current Work — Deployed Resume Service Explanation
+
+- [x] Inspect the deployed frontend API configuration and confirm whether FastAPI has a public backend host. *(No public FastAPI host or build-time API variable is configured.)*
+- [x] Explain the connection error and the local-development versus deployed-hosting boundary.
+
+## Current Work — Open Published Frontend
+
+- [ ] Open the managed manus.space domain for the latest deployed frontend.
+- [ ] Confirm whether the current published page loads.
+
+## Current Work — Public Render API Configuration
+
+- [x] Inspect the managed production environment configuration and validate the supplied Render health endpoint.
+- [x] Set the public frontend API base URL without changing local `.env.local`, FastAPI code, or database credentials.
+- [x] Rebuild the public frontend, verify the Render URL is bundled, and confirm browser-level access to the health endpoint from the public frontend origin.
