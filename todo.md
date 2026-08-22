@@ -52,3 +52,9 @@
 - [x] Implement upload and retrieval APIs with focused schema changes, error handling, storage safety, and tests.
 - [x] Implement the existing-design-compatible frontend upload and parsed-result experience through a centralized API configuration.
 - [x] Verify migration DDL, backend tests, frontend build, preserved UI, and Phase 3 documentation.
+
+## Current Work — Managed Deployment Template Recovery
+
+- [x] Inspect the root `dist/` artifact, existing managed configuration files, and packaging script.
+- [x] Correct the configuration template packaging expected by deployment without changing Phase 3 behavior.
+- [x] Rebuild and verify the required configuration aliases and runnable server are present in `dist/`.
