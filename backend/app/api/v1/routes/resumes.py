@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, s
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from app.api.v1.dependencies import assert_record_access, get_optional_current_user
 from app.core.config import get_settings
 from app.core.errors import ResumeUploadError
 from app.db.session import get_db_session
@@ -48,6 +49,7 @@ async def upload_resume(
     user_id: UUID | None = Form(default=None),
     session: Session = Depends(get_db_session),
     storage: ResumeStorage = Depends(get_resume_storage),
+    current_user: User | None = Depends(get_optional_current_user),
 ) -> ResumeUploadResponse:
     """Validate, store, deterministically parse, and persist an uploaded resume."""
     settings = get_settings()
@@ -66,8 +68,12 @@ async def upload_resume(
     except ResumeUploadError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
 
-    if user_id is not None and session.get(User, user_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="The supplied user was not found.")
+    if current_user is not None:
+        if user_id is not None and user_id != current_user.id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="A resume can only be added to the authenticated account.")
+        user_id = current_user.id
+    elif user_id is not None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication is required to add a resume to an account.")
 
     stored_file = storage.save(content, suffix)
     original_filename = PurePath(file.filename or f"resume{suffix}").name[:255]
@@ -98,9 +104,22 @@ async def upload_resume(
 
 
 @router.get("/{resume_id}", response_model=ResumeDetailResponse)
-def get_resume(resume_id: UUID, session: Session = Depends(get_db_session)) -> ResumeDetailResponse:
+def get_resume(resume_id: UUID, session: Session = Depends(get_db_session), current_user: User | None = Depends(get_optional_current_user)) -> ResumeDetailResponse:
     """Return stored metadata and parsed fields without exposing local filesystem paths or file bytes."""
     resume = CareerRepository(session).get_resume(resume_id)
     if resume is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resume not found.")
+    assert_record_access(resume.user_id, current_user)
     return _as_response(resume)
+
+
+@router.get("", response_model=list[ResumeDetailResponse])
+def list_resumes(user_id: UUID | None = None, session: Session = Depends(get_db_session), current_user: User | None = Depends(get_optional_current_user)) -> list[ResumeDetailResponse]:
+    """List persisted resume metadata and deterministic parsed fields, optionally for one user."""
+    if current_user is not None:
+        if user_id is not None and user_id != current_user.id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Resume lists can only be requested for the authenticated account.")
+        user_id = current_user.id
+    elif user_id is not None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication is required to list account resumes.")
+    return [_as_response(resume) for resume in CareerRepository(session).list_resumes(user_id)]

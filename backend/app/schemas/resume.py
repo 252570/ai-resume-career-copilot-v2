@@ -15,9 +15,13 @@ class ParsedResumeData(BaseModel):
     phone: str | None = None
     linkedin: str | None = None
     github: str | None = None
+    summary: list[str] = Field(default_factory=list)
     skills: list[str] = Field(default_factory=list)
     education: list[str] = Field(default_factory=list)
     experience: list[str] = Field(default_factory=list)
+    projects: list[str] = Field(default_factory=list)
+    certifications: list[str] = Field(default_factory=list)
+    links: list[str] = Field(default_factory=list)
 
 
 class ResumeUploadResponse(BaseModel):

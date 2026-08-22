@@ -110,3 +110,31 @@ def test_deterministic_contact_url_and_skill_extraction() -> None:
     assert {"Python", "FastAPI", "PostgreSQL"}.issubset(parsed.skills)
     assert parsed.education == ["Example University"]
     assert parsed.experience == ["Software Engineer"]
+
+
+def test_deterministic_resume_sections_and_links() -> None:
+    parsed = parse_resume_text(
+        "Avery Example\nSummary\nBackend engineer focused on reliable APIs.\n"
+        "Projects\nCareer Copilot API\nCertifications\nAWS Certified Cloud Practitioner\n"
+        "Portfolio https://example.com/avery\n"
+    )
+
+    assert parsed.summary == ["Backend engineer focused on reliable APIs."]
+    assert parsed.projects == ["Career Copilot API"]
+    assert parsed.certifications == ["AWS Certified Cloud Practitioner"]
+    assert parsed.links == ["https://example.com/avery"]
+
+
+def test_lists_previously_uploaded_resumes(client: TestClient) -> None:
+    client.post(
+        "/api/v1/resumes/upload",
+        files={"file": ("first.txt", b"Avery Example\nSkills\nPython", TEXT_CONTENT_TYPE)},
+    )
+    client.post(
+        "/api/v1/resumes/upload",
+        files={"file": ("second.txt", b"Avery Example\nSkills\nFastAPI", TEXT_CONTENT_TYPE)},
+    )
+
+    response = client.get("/api/v1/resumes")
+    assert response.status_code == 200
+    assert {item["filename"] for item in response.json()} == {"second.txt", "first.txt"}

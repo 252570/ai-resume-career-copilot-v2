@@ -23,6 +23,18 @@ def test_database_url_must_use_postgresql(monkeypatch: pytest.MonkeyPatch) -> No
         get_settings().require_database_url()
 
 
+def test_jwt_secret_must_be_present_and_long_enough(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("JWT_SECRET", raising=False)
+    get_settings.cache_clear()
+    with pytest.raises(DatabaseConfigurationError, match="JWT_SECRET"):
+        get_settings().require_jwt_secret()
+
+    monkeypatch.setenv("JWT_SECRET", "too-short")
+    get_settings.cache_clear()
+    with pytest.raises(DatabaseConfigurationError, match="at least 32 characters"):
+        get_settings().require_jwt_secret()
+
+
 def test_session_factory_supports_isolated_test_database() -> None:
     test_url = "sqlite+pysqlite:///:memory:"
     get_engine.cache_clear()

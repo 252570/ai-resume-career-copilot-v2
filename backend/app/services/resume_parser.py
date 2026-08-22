@@ -22,7 +22,11 @@ EMAIL_PATTERN = re.compile(r"(?<![\w.+-])[\w.+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]
 PHONE_PATTERN = re.compile(r"(?<!\w)(?:\+?\d[\d().\-\s]{6,}\d)(?!\w)")
 LINKEDIN_PATTERN = re.compile(r"(?:https?://)?(?:www\.)?linkedin\.com/[A-Za-z0-9_./?=&%-]+", re.IGNORECASE)
 GITHUB_PATTERN = re.compile(r"(?:https?://)?(?:www\.)?github\.com/[A-Za-z0-9_./?=&%-]+", re.IGNORECASE)
-SECTION_MARKERS = ("education", "academic", "qualification", "experience", "employment", "work history", "skills", "projects", "certifications", "summary", "profile")
+URL_PATTERN = re.compile(r"https?://[^\s<>()]+", re.IGNORECASE)
+SECTION_MARKERS = (
+    "education", "academic", "qualification", "experience", "employment", "work history", "skills",
+    "projects", "project experience", "certifications", "certificates", "summary", "profile", "professional summary", "portfolio", "links", "contact",
+)
 SKILL_PATTERNS = {
     "Python": r"\bpython\b",
     "SQL": r"\bsql\b",
@@ -104,9 +108,13 @@ def parse_resume_text(text: str) -> ParsedResumeData:
         phone=phone,
         linkedin=_normalise_url(_first_match(LINKEDIN_PATTERN, text)),
         github=_normalise_url(_first_match(GITHUB_PATTERN, text)),
+        summary=_section_lines(lines, ("summary", "profile", "professional summary")),
         skills=[name for name, pattern in SKILL_PATTERNS.items() if re.search(pattern, text, re.IGNORECASE)],
         education=_section_lines(lines, ("education", "academic", "qualification")),
         experience=_section_lines(lines, ("experience", "employment", "work history")),
+        projects=_section_lines(lines, ("projects", "project experience")),
+        certifications=_section_lines(lines, ("certifications", "certificates")),
+        links=_unique_links(text),
     )
 
 
@@ -138,13 +146,24 @@ def _normalize_text(text: str) -> str:
 
 def _first_match(pattern: re.Pattern[str], text: str) -> str | None:
     match = pattern.search(text)
-    return match.group(0).rstrip(".,;:)\]") if match else None
+    return match.group(0).rstrip(".,;:)]") if match else None
 
 
 def _normalise_url(value: str | None) -> str | None:
     if not value:
         return None
     return value if value.startswith(("http://", "https://")) else f"https://{value}"
+
+
+def _unique_links(text: str) -> list[str]:
+    links: list[str] = []
+    for match in URL_PATTERN.finditer(text):
+        value = match.group(0).rstrip(".,;:)")
+        if value not in links:
+            links.append(value)
+        if len(links) == 12:
+            break
+    return links
 
 
 def _candidate_name(lines: list[str]) -> str | None:
