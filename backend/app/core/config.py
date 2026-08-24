@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
     resume_storage_dir: Path = Path("storage/resumes")
     max_resume_upload_bytes: int = 5 * 1024 * 1024
+    jwt_secret: str | None = None
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -41,6 +44,11 @@ class Settings(BaseSettings):
     def allowed_cors_origins(self) -> list[str]:
         """Return a non-empty, explicitly configured CORS origin list."""
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+
+    def require_jwt_secret(self) -> str:
+        if not self.jwt_secret or len(self.jwt_secret) < 32:
+            raise DatabaseConfigurationError("JWT_SECRET must be set to a secure value of at least 32 characters.")
+        return self.jwt_secret
 
 
 @lru_cache

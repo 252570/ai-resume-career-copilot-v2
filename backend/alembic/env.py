@@ -6,11 +6,17 @@ import os
 from logging.config import fileConfig
 
 from alembic import context
+from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 from sqlalchemy.engine import make_url
 
 from app.db.base import Base
 from app.models import Job, JobSkill, MatchResult, Resume, ResumeSkill, Skill, User  # noqa: F401
+
+# Load backend/.env so Alembic uses the same DATABASE_URL as the FastAPI app when run
+# locally. In deployment, real environment variables are already set and take precedence,
+# so this line is harmless there.
+load_dotenv()
 
 config = context.config
 

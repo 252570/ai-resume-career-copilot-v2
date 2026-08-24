@@ -112,3 +112,43 @@
 - [x] Inspect the managed production environment configuration and validate the supplied Render health endpoint.
 - [x] Set the public frontend API base URL without changing local `.env.local`, FastAPI code, or database credentials.
 - [x] Rebuild the public frontend, verify the Render URL is bundled, and confirm browser-level access to the health endpoint from the public frontend origin.
+
+## Current Work — Functional Completion Audit
+
+- [x] Inventory current backend modules, frontend routes, migrations, tests, and unfinished product placeholders.
+- [x] Record and implement the normalized data-model and API slices for resume management, jobs, matching, ATS, gaps, roadmaps, projects, interview practice, accounts, dashboard, and applications.
+- [x] Complete deterministic resume parsing details and resume/job list management without inventing source evidence.
+- [x] Implement job-description parsing, explainable match persistence, ATS-style gap output, and source-linked skill priorities.
+- [x] Implement persisted learning roadmaps and portfolio prompts that derive only from saved skill gaps.
+- [x] Implement bcrypt/JWT accounts and owner-scoped access checks, including cross-account resume isolation coverage.
+- [x] Implement transparent deterministic interview practice feedback and private application tracking/dashboard summaries.
+- [x] Replace the Phase 3-only landing screen with the authenticated, responsive product workspace while retaining the Quiet Signal Studio visual system.
+- [x] Validate all backend tests, PostgreSQL offline migration SQL through `20260822_0007`, frontend type-check, production static export, and local service startup.
+- [ ] Apply migrations to a reachable local PostgreSQL instance and perform a manually authenticated browser walkthrough using a development database. *(Blocked: no local PostgreSQL service is provisioned in this sandbox.)*
+- [ ] Add future OCR, LLM/RAG, semantic embeddings, resume-version editing, Docker packaging, and final public deployment only under a separately approved scope.
+
+## Current Work — Final Local PostgreSQL Integration Validation
+
+- [x] Inspect migrations `20260820_0001` through `20260822_0007`, PostgreSQL configuration, and real database availability. *(No local PostgreSQL client, server process, or listener is present.)*
+- [x] Render and inspect the complete PostgreSQL DDL chain offline, including 13 application tables, JSONB columns, foreign keys, ownership links, and indexes.
+- [ ] Apply Alembic migrations against a real PostgreSQL instance and inspect created tables. *(Blocked: no reachable PostgreSQL instance is available in this sandbox.)*
+- [x] Run isolated API contract flows for authentication, resume/job intelligence, matching, roadmap/projects, interview practice, applications/dashboard, and owner isolation. *(15 focused tests and 23 full backend tests passed; fixture uses SQLite, not PostgreSQL.)*
+- [ ] Run the same API integration flows against a live PostgreSQL database. *(Blocked pending a reachable PostgreSQL instance.)*
+- [x] Verify the local Next.js/FastAPI development boundary: FastAPI starts on port 8001, health responds, `localhost:3000` CORS is returned, and authenticated PATCH preflight is accepted.
+- [x] Fix the observed browser-integration defect: add `Authorization` and `PATCH` to the restrictive CORS policy and cover it with a regression test.
+- [ ] Record live PostgreSQL results and final deployment readiness only after the blocked migration/table/API validation is completed on a real database; do not publish from this task.
+
+## Current Work — Read-Only Repository Reconciliation
+
+- [ ] Inspect the current Alembic versions directory, Alembic environment, model/API module tree, and Phase 4+ implementation files.
+- [ ] Inspect Git branch, working-tree state, remotes, commit history, and reachable references without changing the checkout.
+- [ ] Compare the observed repository contents against the prior sandbox implementation record and identify where the missing revisions or feature files exist, if anywhere.
+- [ ] Report factual synchronization requirements only; do not alter PostgreSQL, stamp Alembic, reset Git, deploy, or create revisions.
+
+## Current Work — Phase 4+ Git Synchronization
+
+- [ ] Inventory every modified and untracked Phase 4+ backend, frontend, migration, test, documentation, and configuration file in the sandbox working tree.
+- [ ] Create `phase4-complete-sync` from the current committed Phase 3 baseline without changing PostgreSQL, Alembic state, or deployment configuration.
+- [ ] Run complete backend tests, Alembic history verification through `20260822_0007`, and frontend TypeScript/static build checks before commit.
+- [ ] Review staged diff and status, then create one coherent synchronization commit with all related work.
+- [ ] Push the review branch to GitHub, verify the remote commit exists, and report the exact result without merging main.

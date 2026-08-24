@@ -9,6 +9,10 @@ export type ParsedResume = {
   skills: string[];
   education: string[];
   experience: string[];
+  summary?: string | null;
+  projects?: string[];
+  certifications?: string[];
+  links?: string[];
 };
 
 export type UploadedResume = {
@@ -35,7 +39,7 @@ export function getResumeApiBaseUrl(): string | null {
   return configuredApiBaseUrl ? configuredApiBaseUrl.replace(/\/$/, "") : null;
 }
 
-export async function uploadResume(file: File): Promise<UploadedResume> {
+export async function uploadResume(file: File, accessToken?: string): Promise<UploadedResume> {
   const apiBaseUrl = getResumeApiBaseUrl();
   if (!apiBaseUrl) {
     throw new ResumeApiError(
@@ -47,7 +51,11 @@ export async function uploadResume(file: File): Promise<UploadedResume> {
 
   let response: Response;
   try {
-    response = await fetch(`${apiBaseUrl}/resumes/upload`, { method: "POST", body: payload });
+    response = await fetch(`${apiBaseUrl}/resumes/upload`, {
+      method: "POST",
+      body: payload,
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
   } catch {
     throw new ResumeApiError("The configured resume service could not be reached. Confirm FastAPI is running and NEXT_PUBLIC_API_BASE_URL is correct.");
   }

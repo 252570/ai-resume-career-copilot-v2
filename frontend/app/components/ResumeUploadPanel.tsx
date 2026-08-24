@@ -49,7 +49,7 @@ function ParsedEvidence({ parsed }: { parsed: ParsedResume }) {
   );
 }
 
-export function ResumeUploadPanel() {
+export function ResumeUploadPanel({ accessToken, onUploaded }: { accessToken?: string; onUploaded?: (resume: UploadedResume) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -90,7 +90,9 @@ export function ResumeUploadPanel() {
     setError(null);
     setResult(null);
     try {
-      setResult(await uploadResume(selectedFile));
+      const uploaded = await uploadResume(selectedFile, accessToken);
+      setResult(uploaded);
+      onUploaded?.(uploaded);
     } catch (uploadError) {
       setError(uploadError instanceof ResumeApiError ? uploadError.message : "The resume upload could not be completed.");
     } finally {
@@ -101,9 +103,9 @@ export function ResumeUploadPanel() {
   return (
     <section className="upload-ledger" id="resume-upload" aria-labelledby="upload-heading">
       <div className="upload-intro">
-        <p className="eyebrow">Phase 03 / Career evidence</p>
+          <p className="eyebrow">Career evidence / Resume intake</p>
         <h2 id="upload-heading">Bring the <em>source</em> into view.</h2>
-        <p>Upload one resume. The parser extracts readable evidence without inventing profile details or making career decisions.</p>
+          <p>Upload a resume. The parser extracts readable evidence without inventing profile details, then attaches it to your signed-in workspace when an account is active.</p>
         <dl>
           <div><dt>Formats</dt><dd>PDF / DOCX / TXT</dd></div>
           <div><dt>Limit</dt><dd>5 MB maximum</dd></div>
