@@ -68,6 +68,11 @@ def _docx_with_text() -> bytes:
         ("candidate.docx", _docx_with_text(), DOCX_CONTENT_TYPE),
         ("candidate.txt", b"Avery Example\navery@example.com\nSkills\nPython, FastAPI", TEXT_CONTENT_TYPE),
     ],
+    # Explicit ids are required, not cosmetic. Without them pytest derives the id from the
+    # raw fixture bytes, and a ~36 KB DOCX expands to a ~105 KB id. pytest exports that id
+    # in the PYTEST_CURRENT_TEST environment variable, which exceeds the 32,767-character
+    # Windows limit and raises ValueError during setup, so the case never runs at all.
+    ids=["pdf", "docx", "txt"],
 )
 def test_supported_resumes_upload_and_retrieve(client: TestClient, filename: str, content: bytes, content_type: str) -> None:
     upload = client.post("/api/v1/resumes/upload", files={"file": (filename, content, content_type)})
@@ -138,3 +143,87 @@ def test_lists_previously_uploaded_resumes(client: TestClient) -> None:
     response = client.get("/api/v1/resumes")
     assert response.status_code == 200
     assert {item["filename"] for item in response.json()} == {"second.txt", "first.txt"}
+
+
+# --- Skill-detection precision -------------------------------------------------------
+# The product boundary in README.md is that parsing never fabricates evidence the source
+# document does not contain. Several skill names are also ordinary English words, so a
+# bare word match credits a candidate with skills they never claimed, and that error then
+# propagates into the match score, ATS gaps, roadmap steps, and project prompts.
+
+
+@pytest.mark.parametrize(
+    ("skill", "text"),
+    [
+        ("Spring", "B.Tech Computer Science, Spring 2023 - Fall 2026"),
+        ("Spring", "Completed a Spring semester internship"),
+        ("Go", "Go the extra mile for every customer"),
+        ("Go", "Going above and beyond as the go-to person on the team"),
+        ("Excel", "Helped the team excel at delivering features on time"),
+        ("Excel", "Excellent written and verbal communication skills"),
+        ("Apache Spark", "Sparked a redesign of the onboarding flow"),
+        ("Machine Learning", "Contact ai@example.com or reach the ml team"),
+    ],
+    ids=[
+        "spring-semester-date",
+        "spring-semester-word",
+        "go-idiom",
+        "go-gerund",
+        "excel-verb",
+        "excel-excellent",
+        "spark-verb",
+        "ml-ai-lowercase-prose",
+    ],
+)
+def test_common_words_are_not_reported_as_skills(skill: str, text: str) -> None:
+    """A skill must never be inferred from an ordinary English word used as prose."""
+    parsed = parse_resume_text(f"Avery Example\nExperience\n{text}\n")
+
+    assert skill not in parsed.skills, f"fabricated {skill!r} from: {text!r}"
+
+
+@pytest.mark.parametrize(
+    ("skill", "text"),
+    [
+        ("Spring", "Built REST services with Spring Boot"),
+        ("Spring", "Experience with Spring MVC and Hibernate"),
+        ("Go", "Go programming language"),
+        ("Go", "Backend services in Go, Rust, and Python"),
+        ("Go", "Proficient in Golang"),
+        ("Excel", "Advanced Microsoft Excel and pivot tables"),
+        ("Excel", "Excel macros for automated reporting"),
+        ("Apache Spark", "Processed batch data with Apache Spark"),
+        ("Apache Spark", "Used Spark SQL for ETL pipelines"),
+        ("Machine Learning", "Machine Learning coursework and projects"),
+        ("Machine Learning", "Applied ML and AI techniques to forecasting"),
+        ("Java", "Backend development in Java and Spring Boot"),
+    ],
+    ids=[
+        "spring-boot",
+        "spring-mvc",
+        "go-language",
+        "go-in-list",
+        "golang",
+        "microsoft-excel",
+        "excel-macros",
+        "apache-spark",
+        "spark-sql",
+        "machine-learning",
+        "ml-ai-uppercase",
+        "java-not-javascript",
+    ],
+)
+def test_genuine_skills_are_still_detected(skill: str, text: str) -> None:
+    """Tightening the patterns must not cost real detections."""
+    parsed = parse_resume_text(f"Avery Example\nSkills\n{text}\n")
+
+    assert skill in parsed.skills, f"missed {skill!r} in: {text!r}"
+
+
+def test_substring_skills_do_not_collide() -> None:
+    """Related technology names must not match inside one another."""
+    parsed = parse_resume_text("Avery Example\nSkills\nJavaScript, PostgreSQL, MySQL\n")
+
+    assert {"JavaScript", "PostgreSQL", "MySQL"}.issubset(parsed.skills)
+    assert "Java" not in parsed.skills
+    assert "SQL" not in parsed.skills
