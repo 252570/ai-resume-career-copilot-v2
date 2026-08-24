@@ -27,24 +27,111 @@ SECTION_MARKERS = (
     "education", "academic", "qualification", "experience", "employment", "work history", "skills",
     "projects", "project experience", "certifications", "certificates", "summary", "profile", "professional summary", "portfolio", "links", "contact",
 )
+# Skill vocabulary for resume + job parsing. Each value is a regex matched with
+# re.IGNORECASE against the whole document. Notes on the tricky cases:
+#   * Word boundaries (\b) keep sub-string false positives out, e.g. "\bjava\b"
+#     will NOT match inside "JavaScript", and "\bsql\b" will NOT match inside
+#     "PostgreSQL" or "MySQL".
+#   * A skill whose name is also a common English word ("Spring", "Go", "Excel",
+#     "Spark") must NEVER be detected from the bare word alone. A resume reading
+#     "Spring 2023", "go the extra mile", or "helped excel at" contains no such
+#     skill, and crediting one fabricates evidence the document does not support.
+#     These require a disambiguating qualifier ("Spring Boot", "Go programming",
+#     "Microsoft Excel", "Apache Spark") or an unambiguous list context.
+#   * Acronyms that collide with ordinary words when lowercased (ML, AI) use an
+#     inline (?-i:...) group to force a case-sensitive match, so prose like
+#     "the ml team" or an address such as "ai@example.com" does not match.
+#   * Bare single letters like "C" and "R" are intentionally omitted: they are
+#     far too noisy to detect reliably from free text.
 SKILL_PATTERNS = {
+    # --- Programming languages ---
     "Python": r"\bpython\b",
-    "SQL": r"\bsql\b",
-    "PostgreSQL": r"\bpostgres(?:ql)?\b",
     "JavaScript": r"\bjavascript\b",
     "TypeScript": r"\btypescript\b",
-    "React": r"\breact(?:\.js)?\b",
-    "Next.js": r"\bnext\.?js\b",
-    "FastAPI": r"\bfastapi\b",
-    "Docker": r"\bdocker\b",
-    "AWS": r"\baws\b|\bamazon web services\b",
-    "Git": r"\bgit\b",
-    "Pandas": r"\bpandas\b",
-    "Machine Learning": r"\bmachine learning\b",
     "Java": r"\bjava\b",
-    "C++": r"\bc\+\+\b",
-    "C#": r"\bc#\b|\bc sharp\b",
-    "Excel": r"\bexcel\b",
+    "C++": r"\bc\+\+",
+    "C#": r"\bc#|\bc sharp\b",
+    "Go": r"\bgolang\b|(?-i:\bGo\b)(?=[\s,/|)\].]*(?:programming|language|lang\b))|(?-i:\bGo\b)(?=\s*[,/|]\s*(?-i:[A-Z]))",
+    "Rust": r"\brust\b",
+    "Kotlin": r"\bkotlin\b",
+    "Swift": r"\bswift\b",
+    "PHP": r"\bphp\b",
+    "Ruby": r"\bruby\b",
+    "Scala": r"\bscala\b",
+    "Perl": r"\bperl\b",
+    "MATLAB": r"\bmatlab\b",
+    # --- Web / frontend ---
+    "HTML": r"\bhtml5?\b",
+    "CSS": r"\bcss3?\b",
+    "React": r"\breact(?:\.js)?\b",
+    "React Native": r"\breact native\b",
+    "Next.js": r"\bnext\.?js\b",
+    "Angular": r"\bangular(?:js)?\b",
+    "Vue.js": r"\bvue(?:\.js)?\b",
+    "Node.js": r"\bnode\.?js\b|\bnodejs\b",
+    "Express": r"\bexpress(?:\.?js)?\b",
+    "Tailwind CSS": r"\btailwind(?: ?css)?\b",
+    "Bootstrap": r"\bbootstrap\b",
+    # --- Backend frameworks ---
+    "FastAPI": r"\bfastapi\b",
+    "Django": r"\bdjango\b",
+    "Flask": r"\bflask\b",
+    "Spring": r"\bspring\s?boot\b|\bspring\s?framework\b|\bspring\s?mvc\b|\bspring\s?security\b|\bspring\s?data\b",
+    ".NET": r"\basp\.net\b|\bdotnet\b|(?<![\w.])\.net\b",
+    "Flutter": r"\bflutter\b",
+    "GraphQL": r"\bgraphql\b",
+    "REST APIs": r"\brestful\b|\brest apis?\b",
+    # --- Data / ML ---
+    "Machine Learning": r"\bmachine\s?learning\b|\bartificial\s?intelligence\b|(?-i:\bML\b)|(?-i:\bAI\b)",
+    "Deep Learning": r"\bdeep learning\b",
+    "NLP": r"\bnlp\b|\bnatural language processing\b",
+    "Computer Vision": r"\bcomputer vision\b",
+    "TensorFlow": r"\btensorflow\b",
+    "PyTorch": r"\bpytorch\b",
+    "scikit-learn": r"\bscikit[- ]?learn\b|\bsklearn\b",
+    "Keras": r"\bkeras\b",
+    "Pandas": r"\bpandas\b",
+    "NumPy": r"\bnumpy\b",
+    "Matplotlib": r"\bmatplotlib\b",
+    "OpenCV": r"\bopencv\b",
+    "Apache Spark": r"\bapache\s?spark\b|\bpyspark\b|\bspark\b(?=\s*(?:sql|streaming|mllib))",
+    "Hadoop": r"\bhadoop\b",
+    "Tableau": r"\btableau\b",
+    "Power BI": r"\bpower bi\b",
+    "Excel": r"\bmicrosoft\s?excel\b|\bms\s?excel\b|\bexcel\b(?=\s*(?:spreadsheet|macros|vba|pivot))|(?<=\bin\s)\bexcel\b",
+    # --- Databases ---
+    "SQL": r"\bsql\b",
+    "PostgreSQL": r"\bpostgres(?:ql)?\b",
+    "MySQL": r"\bmysql\b",
+    "MongoDB": r"\bmongodb\b|\bmongo\b",
+    "Redis": r"\bredis\b",
+    "SQLite": r"\bsqlite\b",
+    "Oracle": r"\boracle\b",
+    "Cassandra": r"\bcassandra\b",
+    "DynamoDB": r"\bdynamodb\b",
+    "Elasticsearch": r"\belasticsearch\b",
+    "Firebase": r"\bfirebase\b",
+    # --- Cloud / DevOps ---
+    "AWS": r"\baws\b|\bamazon web services\b",
+    "Azure": r"\bazure\b",
+    "GCP": r"\bgcp\b|\bgoogle cloud\b",
+    "Docker": r"\bdocker\b",
+    "Kubernetes": r"\bkubernetes\b|\bk8s\b",
+    "Terraform": r"\bterraform\b",
+    "Jenkins": r"\bjenkins\b",
+    "Ansible": r"\bansible\b",
+    "CI/CD": r"\bci/?cd\b",
+    "Linux": r"\blinux\b",
+    "Nginx": r"\bnginx\b",
+    "Kafka": r"\bkafka\b",
+    "Microservices": r"\bmicroservices?\b",
+    # --- Tools / practices ---
+    "Git": r"\bgit\b",
+    "Jira": r"\bjira\b",
+    "Agile": r"\bagile\b",
+    "Scrum": r"\bscrum\b",
+    "Figma": r"\bfigma\b",
+    "Postman": r"\bpostman\b",
 }
 
 
