@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "pnpm --filter career-copilot-frontend dev",
-    "build": "pnpm --filter career-copilot-frontend exec cross-env NODE_ENV=production NEXT_PUBLIC_API_BASE_URL=https://career-copilot-api-1t3l.onrender.com/api/v1 next build && node scripts/prepare-static-dist.mjs && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "build": "pnpm --filter career-copilot-frontend exec cross-env NODE_ENV=production next build && node scripts/prepare-static-dist.mjs && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "pnpm --filter career-copilot-frontend check",
     "test": "pnpm --filter career-copilot-frontend test",

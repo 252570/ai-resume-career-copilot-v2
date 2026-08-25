@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 from sqlalchemy.engine import make_url
 
+from app.core.config import normalize_database_url
 from app.db.base import Base
 from app.models import Job, JobSkill, MatchResult, Resume, ResumeSkill, Skill, User  # noqa: F401
 
@@ -33,7 +34,9 @@ def get_database_url() -> str:
         raise RuntimeError(
             "DATABASE_URL must use a PostgreSQL connection scheme before Alembic can apply this migration."
         )
-    return database_url
+    # Share the API's normalization so a provider-supplied driver-less URL does not fail
+    # here with a psycopg2 import error after the same URL worked for the running service.
+    return normalize_database_url(database_url)
 
 
 def run_migrations_offline() -> None:

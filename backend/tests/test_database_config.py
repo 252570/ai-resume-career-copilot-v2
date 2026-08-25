@@ -4,7 +4,7 @@ from collections.abc import Generator
 
 import pytest
 
-from app.core.config import get_settings
+from app.core.config import get_settings, normalize_database_url
 from app.core.errors import DatabaseConfigurationError
 from app.db.session import get_engine, get_session_factory
 
@@ -60,3 +60,43 @@ def test_session_factory_supports_isolated_test_database() -> None:
 
     assert get_engine(test_url).url.drivername == "sqlite+pysqlite"
     assert get_session_factory(test_url).kw["bind"] is get_engine(test_url)
+
+
+# --- Connection URL normalization ----------------------------------------------------
+# Managed PostgreSQL providers hand out driver-less URLs. SQLAlchemy maps a bare
+# "postgresql://" to psycopg2, which this project does not install, so pasting a provider
+# URL verbatim failed at connect time with ModuleNotFoundError rather than anything that
+# pointed at the actual problem.
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("postgresql+psycopg://u:p@h:5432/d", "postgresql+psycopg://u:p@h:5432/d"),
+        ("postgresql://u:p@h:5432/d", "postgresql+psycopg://u:p@h:5432/d"),
+        ("postgres://u:p@h:5432/d", "postgresql+psycopg://u:p@h:5432/d"),
+        ("postgresql://u:p@ep-x.aws.neon.tech/db?sslmode=require", "postgresql+psycopg://u:p@ep-x.aws.neon.tech/db?sslmode=require"),
+    ],
+    ids=["already-psycopg", "driverless", "legacy-postgres-scheme", "provider-url-with-sslmode"],
+)
+def test_normalize_database_url_forces_the_installed_driver(raw: str, expected: str) -> None:
+    """Only the scheme changes; credentials, host, path, and query must survive intact."""
+    assert normalize_database_url(raw) == expected
+
+
+@pytest.mark.parametrize(
+    "raw",
+    ["sqlite+pysqlite:///:memory:", "mysql://u:p@h/d", "postgresqlish://u:p@h/d", "not-a-url"],
+    ids=["sqlite", "mysql", "lookalike-scheme", "garbage"],
+)
+def test_normalize_database_url_rejects_non_postgresql(raw: str) -> None:
+    with pytest.raises(DatabaseConfigurationError, match="PostgreSQL connection scheme"):
+        normalize_database_url(raw)
+
+
+def test_require_database_url_normalizes_a_provider_url(monkeypatch: pytest.MonkeyPatch, isolated_env: None) -> None:
+    """A pasted provider URL must reach SQLAlchemy with an explicit psycopg driver."""
+    monkeypatch.setenv("DATABASE_URL", "postgresql://u:p@h:5432/d")
+    get_settings.cache_clear()
+
+    assert get_settings().require_database_url() == "postgresql+psycopg://u:p@h:5432/d"
