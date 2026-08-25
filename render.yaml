@@ -46,8 +46,9 @@ services:
     name: career-copilot
     runtime: static
     autoDeployTrigger: checksPass
-    # corepack activates the pnpm version pinned by "packageManager" in package.json.
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter career-copilot-frontend exec next build
+    # Render provisions pnpm for the build image; avoid Corepack downloads so the build
+    # does not depend on a mutable package-manager tarball integrity hash.
+    buildCommand: pnpm install --frozen-lockfile && pnpm --filter career-copilot-frontend exec next build
     # next.config.ts sets output: "export", so the static export lands here.
     staticPublishPath: ./frontend/out
     envVars:
