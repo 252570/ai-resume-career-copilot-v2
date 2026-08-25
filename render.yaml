@@ -40,7 +40,7 @@ services:
       # Must list the exact frontend origin. A trailing slash or an http:// scheme here
       # will fail the browser's CORS preflight even though the API itself is healthy.
       - key: CORS_ORIGINS
-        value: https://career-copilot.onrender.com
+        value: https://career-copilot-la6y.onrender.com
 
   - type: web
     name: career-copilot
@@ -61,7 +61,7 @@ services:
       # Inlined into the bundle at build time, so changing it requires a rebuild, not
       # just a restart. Must include the /api/v1 suffix and no trailing slash.
       - key: NEXT_PUBLIC_API_BASE_URL
-        value: https://career-copilot-api.onrender.com/api/v1
+        value: https://career-copilot-api-1t3l.onrender.com/api/v1
     headers:
       - path: /*
         name: X-Content-Type-Options
@@ -77,7 +77,7 @@ services:
         value: geolocation=(), microphone=(), camera=()
       - path: /*
         name: Content-Security-Policy
-        value: "default-src 'self'; connect-src 'self' https://career-copilot-api.onrender.com; img-src 'self' data: blob:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+        value: "default-src 'self'; connect-src 'self' https://career-copilot-api-1t3l.onrender.com; img-src 'self' data: blob:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
     # No `routes:` block on purpose. The export is a single page at /, so a catch-all
     # rewrite would add risk with no benefit, and Render serves the exported 404.html
     # for unmatched paths already.
