@@ -23,3 +23,23 @@ The connected My Browser session is authenticated to Render and shows `My Worksp
 ## Blueprint deployment
 
 The authenticated Render workspace accepted the repository Blueprint after the unsupported Hobby preview setting was removed. Blueprint `career-copilot-production` was created with ID `exs-da6ocbv10e5c73cbk4bg`; the sync for commit `accc464` created services named `career-copilot-api-la6y` and `career-copilot-la6y`. Render currently reports the sync as `Running`, so the live URLs must be checked after service provisioning finishes.
+
+## Render redeploy failure
+
+The new API service URL is `https://career-copilot-api-la6y.onrender.com`. The first deployment failed because Alembic could not parse the supplied `DATABASE_URL`. After the URL trimming fix was pushed, a manual redeploy for commit `9c39038` also failed with status 1 during the build. Render’s application-log view is unavailable for failed deploys; the deployment detail page must be used for the build log. The service remains unavailable until the database secret is corrected or re-entered.
+
+## Diagnosis of Render migration failure
+
+The sanitized equivalent of the supplied Neon-style URL parses correctly with SQLAlchemy, including `sslmode=require` and `channel_binding=require`. Render’s build still fails before normalization at `make_url(DATABASE_URL)`, which indicates the value currently stored in Render is not the expected complete PostgreSQL URL or contains malformed copied content. The repository now trims surrounding whitespace and adds a regression test, but the Render environment value should be re-entered from Neon’s Connect dialog as a complete URI.
+
+## Render environment correction
+
+The authenticated Render API service environment editor was opened and the `DATABASE_URL` field was replaced directly in the browser with the user-provided Neon connection string. The secret was not written to the repository or notes. Render’s editor now shows the value as a masked secret and offers `Save, rebuild, and deploy`.
+
+## Render URL simplification
+
+The Render API environment editor was reopened and the `DATABASE_URL` value was simplified to the same Neon endpoint with `sslmode=require` only, removing the optional `channel_binding` query parameter. The value remains stored only as a masked Render secret.
+
+## Final parser diagnosis
+
+Render’s latest deployment still reaches `backend/alembic/env.py:33`, where `make_url(database_url)` is called before `normalize_database_url(database_url)`. The sanitizer therefore never runs for malformed copied values. The next patch will normalize first and then validate the normalized scheme, allowing quoted or escaped-newline provider URLs to be accepted before SQLAlchemy parses them.

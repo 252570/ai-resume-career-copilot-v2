@@ -8,8 +8,6 @@ from logging.config import fileConfig
 from alembic import context
 from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
-from sqlalchemy.engine import make_url
-
 from app.core.config import normalize_database_url
 from app.db.base import Base
 from app.models import Job, JobSkill, MatchResult, Resume, ResumeSkill, Skill, User  # noqa: F401
@@ -29,14 +27,15 @@ target_metadata = Base.metadata
 
 def get_database_url() -> str:
     """Prefer the deployment environment and retain an inert local Alembic fallback."""
-    database_url = (os.getenv("DATABASE_URL") or config.get_main_option("sqlalchemy.url")).strip()
-    if not make_url(database_url).drivername.startswith("postgresql"):
+    database_url = os.getenv("DATABASE_URL") or config.get_main_option("sqlalchemy.url")
+    # Normalize before validation so provider URLs copied with quotes or line breaks are
+    # cleaned before SQLAlchemy parses them. This also forces the installed psycopg driver.
+    normalized_url = normalize_database_url(database_url)
+    if not normalized_url.startswith("postgresql+psycopg://"):
         raise RuntimeError(
             "DATABASE_URL must use a PostgreSQL connection scheme before Alembic can apply this migration."
         )
-    # Share the API's normalization so a provider-supplied driver-less URL does not fail
-    # here with a psycopg2 import error after the same URL worked for the running service.
-    return normalize_database_url(database_url)
+    return normalized_url
 
 
 def run_migrations_offline() -> None:
