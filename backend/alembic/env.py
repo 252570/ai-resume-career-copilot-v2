@@ -29,7 +29,7 @@ target_metadata = Base.metadata
 
 def get_database_url() -> str:
     """Prefer the deployment environment and retain an inert local Alembic fallback."""
-    database_url = os.getenv("DATABASE_URL") or config.get_main_option("sqlalchemy.url")
+    database_url = (os.getenv("DATABASE_URL") or config.get_main_option("sqlalchemy.url")).strip()
     if not make_url(database_url).drivername.startswith("postgresql"):
         raise RuntimeError(
             "DATABASE_URL must use a PostgreSQL connection scheme before Alembic can apply this migration."
