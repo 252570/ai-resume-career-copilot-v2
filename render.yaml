@@ -10,9 +10,6 @@
 # to psycopg 3 by app.core.config.normalize_database_url, so a provider URL can be pasted
 # verbatim without hand-editing the scheme.
 
-previews:
-  generation: manual
-
 services:
   - type: web
     name: career-copilot-api
