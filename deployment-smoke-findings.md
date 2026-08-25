@@ -43,3 +43,38 @@ The Render API environment editor was reopened and the `DATABASE_URL` value was 
 ## Final parser diagnosis
 
 Render’s latest deployment still reaches `backend/alembic/env.py:33`, where `make_url(database_url)` is called before `normalize_database_url(database_url)`. The sanitizer therefore never runs for malformed copied values. The next patch will normalize first and then validate the normalized scheme, allowing quoted or escaped-newline provider URLs to be accepted before SQLAlchemy parses them.
+
+## Explicit driver correction
+
+The Render API environment editor now contains the Neon connection string with the explicit `postgresql+psycopg://` scheme and `sslmode=require`. This avoids ambiguity in both SQLAlchemy and Alembic while keeping the credential masked in Render.
+
+## Provisioned Render services
+
+The Blueprint resources page shows both services provisioned: API `career-copilot-api-la6y` in Oregon and static frontend `career-copilot-la6y` globally. Render lists the frontend URL as `https://career-copilot-la6y.onrender.com` and the API URL as `https://career-copilot-api-la6y.onrender.com`. The connected browser could not open the frontend URL due a browser connection error, so shell-level HTTP verification is required. Render’s event list currently reports the static deployment as failed for the old `dd8bdc4` commit because the API migration deployment failed; the frontend URL still needs independent HTTP verification.
+
+## Live deployment comparison
+
+The existing API service `https://career-copilot-api-1t3l.onrender.com` responds with HTTP 200 for both liveness and readiness, reporting a connected database. The new Blueprint API remains unavailable because its latest deployment failed. The new static site `https://career-copilot-la6y.onrender.com` responds with HTTP 404 and `x-render-routing: static-no-asset`, indicating that its publish directory contains no deployed asset. The static service settings confirm the repository and `main` branch, but the build and publish values require further inspection or correction.
+
+## Frontend is live
+
+Render successfully published the permanent static site at `https://career-copilot-la6y.onrender.com` from commit `fe84ffb`. The build completed with Next.js static export and Render reported `Your site is live`. The frontend’s configured API origin still needs verification and correction: the Blueprint currently references the unsuffixed host `career-copilot-api.onrender.com`, while the provisioned API service is `career-copilot-api-la6y.onrender.com` and the known healthy legacy API is `career-copilot-api-1t3l.onrender.com`.
+
+## Frontend API origin correction
+
+The permanent frontend’s Render environment variable `NEXT_PUBLIC_API_BASE_URL` was corrected to the known healthy API origin `https://career-copilot-api-1t3l.onrender.com/api/v1`. The previous build had embedded the invalid unsuffixed `career-copilot-api.onrender.com` hostname in the Content Security Policy and API client configuration.
+
+## Existing API CORS update
+
+The healthy existing API at `https://career-copilot-api-1t3l.onrender.com` responds with HTTP 200 and a connected database, but its response to the permanent frontend origin lacks `access-control-allow-origin`. The existing API service’s `CORS_ORIGINS` is being updated to `https://career-copilot-la6y.onrender.com`; its existing database and JWT secrets remain unchanged.
+
+## 2026-08-25 production follow-up
+
+- The permanent static frontend initially rendered blank because the deployed CSP blocked Next.js inline hydration bootstrap scripts. Commit `edc6189` changed only `script-src` to allow `'unsafe-inline'`; the live frontend now renders the signup page and authenticated dashboard.
+- The healthy legacy API is the current production backend fallback at `career-copilot-api-1t3l.onrender.com`. Its CORS allowlist now preserves the prior Manus origin and includes the permanent Render frontend origin. GET and OPTIONS probes return the expected `Access-Control-Allow-Origin`, methods, and headers.
+- The legacy API had no database tables because its Render Build Command omitted migrations. Render was updated to run `python -m alembic upgrade head` after dependency installation; the production database is now schema-initialized.
+- The legacy API also lacked `JWT_SECRET`; a fresh secret was generated and saved only in Render’s environment. It was not written to the repository or this log.
+- A synthetic browser signup completed successfully and opened the owner-scoped dashboard.
+- The authenticated Jobs workflow successfully parsed and saved a synthetic Backend Engineer role, then navigated to Match with the saved role available in the selector.
+- After sign-out, the same synthetic account logged back in successfully through the public frontend and the saved role remained available, confirming persistence and token-based access.
+- No passwords, database URLs, JWT values, or user credentials are recorded in this file.
