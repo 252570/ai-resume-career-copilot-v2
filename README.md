@@ -104,7 +104,7 @@ All routes below are prefixed with `/api/v1`. Protected routes require `Authoriz
 
 | Area | Routes | Notes |
 | --- | --- | --- |
-| Health | `GET /health` | No database credentials are returned. |
+| Health | `GET /health`, `GET /health/ready` | Liveness is always `200` and reports observed database state; readiness returns `503` when the database is unusable. Neither returns credentials or connection details. |
 | Authentication | `POST /auth/signup`, `POST /auth/login`, `GET /auth/me` | Passwords are hashed with bcrypt; JWT signing uses `JWT_SECRET`. |
 | Resumes | `POST /resumes/upload`, `GET /resumes`, `GET /resumes/{id}` | PDF/DOCX/TXT only; 5 MB maximum; no binary file or local path is returned. |
 | Jobs | `POST /jobs`, `POST /jobs/upload`, `GET /jobs`, `GET /jobs/{id}` | Deterministically parses supplied job content. |
@@ -137,9 +137,24 @@ pnpm build
 
 The project does not hard-code database credentials, API keys, password hashes, or JWT secrets. The browser stores only the bearer token needed for the active local session; the API never returns password hashes, upload storage paths, or source file bytes. User-owned resumes, jobs, analyses, plans, practice sessions, and application entries are checked against the authenticated account before retrieval or modification.
 
-This repository intentionally stops before OCR, third-party AI providers, RAG, and deployment packaging. Those features require separate threat modeling, provider configuration, evaluation standards, and operational decisions rather than being represented as incomplete or simulated controls.
+This repository intentionally stops before OCR, third-party AI providers, and RAG. Those features require separate threat modeling, provider configuration, and evaluation standards rather than being represented as incomplete or simulated controls.
 
 To report a vulnerability, see [SECURITY.md](SECURITY.md).
+
+## Deployment
+
+[`render.yaml`](render.yaml) is a Render Blueprint describing both services, so the deployment is reviewable in version control rather than reconstructed from dashboard state. It declares the FastAPI web service and the static frontend export; the database is deliberately external, because Render's free PostgreSQL instance is deleted 30 days after creation.
+
+Two secrets are never stored in this repository. `DATABASE_URL` is marked `sync: false` and entered once when the blueprint is created; `JWT_SECRET` uses `generateValue: true` so Render generates a strong value that no one needs to handle.
+
+Operational notes worth knowing before deploying:
+
+- **Any PostgreSQL URL works.** Managed providers hand out driver-less `postgresql://` URLs, which SQLAlchemy maps to psycopg2 — a driver this project does not install. `normalize_database_url` rewrites the scheme to psycopg 3 for both the API and Alembic, so a provider URL can be pasted verbatim.
+- **Migrations run in the build command,** not a pre-deploy hook, because pre-deploy is a paid Render feature. A failed migration fails the build and the previous version keeps serving.
+- **The platform health check points at liveness, not readiness,** on purpose. A readiness check there would make Render restart a healthy process during a database blip and turn a recoverable fault into an outage.
+- **`NEXT_PUBLIC_API_BASE_URL` is inlined at build time,** so changing the API origin requires a rebuild rather than a restart. `CORS_ORIGINS` on the API must list the frontend origin exactly; a trailing slash or an `http://` scheme fails the browser preflight while the API itself still reports healthy.
+
+After a deploy, `GET /api/v1/health/ready` is the single check that confirms the service can actually serve traffic.
 
 ## License
 

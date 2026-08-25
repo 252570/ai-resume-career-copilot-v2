@@ -7,6 +7,28 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.core.errors import DatabaseConfigurationError
 
+# Driver-less PostgreSQL URLs resolve to psycopg2 in SQLAlchemy, which this project does
+# not install; it depends on psycopg 3. Managed providers (Neon, Supabase, Render, Heroku)
+# all hand out driver-less URLs, and the legacy "postgres://" form is still common, so
+# pasting a provider URL verbatim produced ModuleNotFoundError: psycopg2 at connect time.
+# Normalizing here fixes that once for both the API and Alembic instead of relying on
+# every operator to hand-edit the scheme correctly.
+_PSYCOPG_SCHEME = "postgresql+psycopg://"
+_NORMALIZABLE_SCHEMES = ("postgresql://", "postgres://")
+
+
+def normalize_database_url(database_url: str) -> str:
+    """Return an explicit psycopg-3 PostgreSQL URL or raise a safe configuration error."""
+    if database_url.startswith(_PSYCOPG_SCHEME):
+        return database_url
+    for scheme in _NORMALIZABLE_SCHEMES:
+        if database_url.startswith(scheme):
+            return f"{_PSYCOPG_SCHEME}{database_url[len(scheme):]}"
+    raise DatabaseConfigurationError(
+        "DATABASE_URL must use a PostgreSQL connection scheme "
+        "(postgresql+psycopg://, postgresql://, or postgres://)."
+    )
+
 
 class Settings(BaseSettings):
     """Runtime settings with safe defaults and environment-only database credentials."""
@@ -37,9 +59,7 @@ class Settings(BaseSettings):
                 "DATABASE_URL is required for database-backed operations. "
                 "Set it in the runtime environment before running migrations or the API."
             )
-        if not self.database_url.startswith(("postgresql://", "postgresql+psycopg://")):
-            raise DatabaseConfigurationError("DATABASE_URL must use a PostgreSQL connection scheme.")
-        return self.database_url
+        return normalize_database_url(self.database_url)
 
     def allowed_cors_origins(self) -> list[str]:
         """Return a non-empty, explicitly configured CORS origin list."""
