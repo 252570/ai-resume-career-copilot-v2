@@ -77,8 +77,10 @@ def test_session_factory_supports_isolated_test_database() -> None:
         ("postgres://u:p@h:5432/d", "postgresql+psycopg://u:p@h:5432/d"),
         ("postgresql://u:p@ep-x.aws.neon.tech/db?sslmode=require", "postgresql+psycopg://u:p@ep-x.aws.neon.tech/db?sslmode=require"),
         ("  postgresql://u:p@h:5432/d\n", "postgresql+psycopg://u:p@h:5432/d"),
+        ("'postgresql://u:p@h:5432/d'", "postgresql+psycopg://u:p@h:5432/d"),
+        ("postgresql://u:p@h:5432/d\\n", "postgresql+psycopg://u:p@h:5432/d"),
     ],
-    ids=["already-psycopg", "driverless", "legacy-postgres-scheme", "provider-url-with-sslmode", "trimmed-provider-url"],
+    ids=["already-psycopg", "driverless", "legacy-postgres-scheme", "provider-url-with-sslmode", "trimmed-provider-url", "quoted-provider-url", "escaped-newline-provider-url"],
 )
 def test_normalize_database_url_forces_the_installed_driver(raw: str, expected: str) -> None:
     """Only the scheme changes; credentials, host, path, and query must survive intact."""

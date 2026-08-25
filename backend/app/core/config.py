@@ -20,6 +20,9 @@ _NORMALIZABLE_SCHEMES = ("postgresql://", "postgres://")
 def normalize_database_url(database_url: str) -> str:
     """Return an explicit psycopg-3 PostgreSQL URL or raise a safe configuration error."""
     database_url = database_url.strip()
+    if len(database_url) >= 2 and database_url[0] == database_url[-1] and database_url[0] in {"'", '"'}:
+        database_url = database_url[1:-1].strip()
+    database_url = database_url.replace("\\r", "").replace("\\n", "")
     if database_url.startswith(_PSYCOPG_SCHEME):
         return database_url
     for scheme in _NORMALIZABLE_SCHEMES:
