@@ -85,6 +85,7 @@ jspm_packages/
 
 # Next.js build output
 .next
+frontend/out/
 
 # Nuxt.js build / generate output
 .nuxt

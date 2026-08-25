@@ -1,5 +1,15 @@
 # AI Resume & Career Copilot
 
+[![CI](https://github.com/252570/ai-resume-career-copilot-v2/actions/workflows/ci.yml/badge.svg)](https://github.com/252570/ai-resume-career-copilot-v2/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-informational.svg)](LICENSE)
+![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-15-000000?logo=nextdotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
+
+> ⚠️ **Deterministic by design — no LLM.** Every recommendation, match score, and piece of feedback comes from explicit rules and templates over evidence in your own documents. Nothing here calls a language model or fabricates resume or job content. See the method boundary below.
+
 AI Resume & Career Copilot is a production-oriented final-year project for building an **evidence-first career workspace**. A signed-in user can upload and parse a resume, capture a target role, inspect a deterministic and explainable comparison, turn visible gaps into a learning sequence and portfolio prompts, rehearse structured interview answers, and track applications in an owner-scoped dashboard.
 
 > **Method boundary:** The implemented recommendation, matching, ATS-style, roadmap, project, and interview-feedback features are deterministic rules and templates. They do not call an LLM, do not fabricate resume or job evidence, and do not claim to predict a hiring outcome or judge an interview.
@@ -128,3 +138,9 @@ pnpm build
 The project does not hard-code database credentials, API keys, password hashes, or JWT secrets. The browser stores only the bearer token needed for the active local session; the API never returns password hashes, upload storage paths, or source file bytes. User-owned resumes, jobs, analyses, plans, practice sessions, and application entries are checked against the authenticated account before retrieval or modification.
 
 This repository intentionally stops before OCR, third-party AI providers, RAG, and deployment packaging. Those features require separate threat modeling, provider configuration, evaluation standards, and operational decisions rather than being represented as incomplete or simulated controls.
+
+To report a vulnerability, see [SECURITY.md](SECURITY.md).
+
+## License
+
+Released under the [MIT License](LICENSE). Copyright (c) 2026 Robin Kushwaha.
