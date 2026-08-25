@@ -152,3 +152,13 @@
 - [ ] Run complete backend tests, Alembic history verification through `20260822_0007`, and frontend TypeScript/static build checks before commit.
 - [ ] Review staged diff and status, then create one coherent synchronization commit with all related work.
 - [ ] Push the review branch to GitHub, verify the remote commit exists, and report the exact result without merging main.
+
+## Current Work — Production Deployment Hardening
+
+- [x] Replace stale local-only frontend upload errors with deployment-neutral configuration and reachability guidance.
+- [x] Replace the stale backend README with the complete implemented API and deployment contract.
+- [x] Add a non-root `Dockerfile.api`, container ignore policy, and migration-first API startup script.
+- [x] Move pnpm overrides and patches into `pnpm-workspace.yaml` and refresh the frozen lockfile configuration.
+- [x] Gate Render auto-deploys on passing CI and add static-site security headers.
+- [x] Verify backend tests, frontend type-check, and production build after hardening.
+- [ ] Apply migrations to a real production PostgreSQL instance and complete a browser walkthrough after deployment credentials and target hosting are supplied.

@@ -1,35 +1,64 @@
-# Backend
+# Career Copilot API
 
-The API is a standalone FastAPI service. Phase 3 adds PDF, DOCX, and TXT resume upload, secure generated-name local storage, deterministic text extraction, conservative basic signal parsing, and metadata retrieval. Matching, AI features, user authentication, OCR, and original-file download routes remain deferred.
+The backend is a standalone FastAPI service for the AI Resume & Career Copilot. It provides authenticated, owner-scoped resume and job intelligence workflows backed by PostgreSQL. The recommendation and feedback services are deterministic and evidence-first: they use explicit parsers, rules, and templates rather than an LLM.
+
+## Implemented capabilities
+
+The API supports password-based signup and login, JWT bearer authentication, PDF/DOCX/TXT resume upload and deterministic extraction, job-description parsing, explainable resume-to-job matching, ATS-style gap notes, persisted learning roadmaps and portfolio prompts, structured interview practice feedback, private application tracking, and dashboard summaries.
+
+All versioned routes are prefixed with `/api/v1`. Protected routes require `Authorization: Bearer <access_token>`.
+
+| Area | Routes |
+| --- | --- |
+| Health | `GET /health`, `GET /health/ready` |
+| Authentication | `POST /auth/signup`, `POST /auth/login`, `GET /auth/me` |
+| Resumes | `POST /resumes/upload`, `GET /resumes`, `GET /resumes/{id}` |
+| Jobs | `POST /jobs`, `POST /jobs/upload`, `GET /jobs`, `GET /jobs/{id}` |
+| Matching | `POST /analyses/match`, `GET /analyses/{id}` |
+| Plans | `POST /plans/{analysis_id}/generate`, `GET /plans/{analysis_id}` |
+| Interview practice | `POST /interviews`, `GET /interviews`, `GET /interviews/{id}`, `POST /interviews/{id}/responses` |
+| Applications | `POST /applications`, `GET /applications`, `PATCH /applications/{id}` |
+| Dashboard | `GET /dashboard` |
+
+## Local development
+
+Use Python 3.11 or newer. Create a virtual environment, install the dependencies, and configure a private PostgreSQL database through an untracked `.env` file.
 
 ```bash
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+# Windows: .venv\\Scripts\\activate
+# macOS/Linux: source .venv/bin/activate
 python -m pip install -r requirements.txt
-
-# Copy the non-secret template and update DATABASE_URL locally.
 cp env.example .env
-python3 -m alembic upgrade head
-
-python -m uvicorn app.main:app --reload --port 8001
-python -m pytest
 ```
 
-Visit `http://127.0.0.1:8001/docs` to inspect the OpenAPI contract and `http://127.0.0.1:8001/api/v1/health` to verify service health.
+Set `DATABASE_URL` to a PostgreSQL connection string and provide a unique `JWT_SECRET` of at least 32 characters. The configuration accepts `postgresql+psycopg://`, `postgresql://`, and legacy `postgres://` URLs and normalizes them to psycopg 3. Keep credentials and uploaded files out of Git.
 
-The runtime requires `DATABASE_URL` before a database-backed operation can begin. It accepts only `postgresql://` or `postgresql+psycopg://` URLs and emits a safe configuration error if unset or invalid. Keep the real value in a private environment file locally or deployment secret store in production.
-
-Run `python -m alembic upgrade head` before uploading. Migration `20260822_0002` adds only nullable `extracted_text` and `parsed_data` fields to the established `resumes` table and makes `user_id` optional until authentication is introduced. Verify its generated PostgreSQL DDL without connecting to a server as follows:
+Apply migrations and start the service:
 
 ```bash
-DATABASE_URL='postgresql+psycopg://career_copilot:placeholder@localhost:5432/career_copilot' \
-  python3 -m alembic upgrade head --sql
+python -m alembic upgrade head
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8001
 ```
 
-### Upload contract
+The interactive API documentation is available at `http://127.0.0.1:8001/docs`. Liveness is available at `http://127.0.0.1:8001/api/v1/health`; readiness verifies that the configured database can serve data-backed requests.
 
-`POST /api/v1/resumes/upload` accepts multipart field `file` and returns `201 Created` after validation, generated-name storage, extraction, deterministic parsing, and metadata persistence. Supported types are PDF, DOCX, and UTF-8/UTF-16 TXT. The hard limit is 5 MB. Unsupported or unreadable input returns an actionable `400` response; oversized files return `413`; persistence errors return a generic `500` response without stack traces or credentials.
+## Verification
 
-`GET /api/v1/resumes/{resume_id}` returns parsed metadata but never returns the original binary upload or its storage path.
+The test suite uses isolated in-memory SQLite fixtures for fast contract and ownership checks. It does not replace PostgreSQL migration validation. Run both checks from the `backend` directory:
 
-Local uploads reside in `backend/storage/resumes/`. Each filename is a generated UUID plus a validated extension, and the directory contents are ignored by Git.
+```bash
+python -m pytest
+DATABASE_URL='postgresql+psycopg://career_copilot:placeholder@localhost:5432/career_copilot' \
+  python -m alembic upgrade head --sql
+```
+
+The offline migration command renders the full PostgreSQL DDL chain without connecting to a server. Before production launch, apply the same migrations to the deployment database and verify `GET /api/v1/health/ready` returns a connected state.
+
+## Production deployment
+
+The repository root contains `render.yaml`, which defines a Python API service and a static Next.js frontend. Configure `DATABASE_URL` as a private Render secret and allow Render to generate `JWT_SECRET`. Set `CORS_ORIGINS` to the exact HTTPS origin of the deployed frontend, without a trailing slash. Set the frontend build variable `NEXT_PUBLIC_API_BASE_URL` to the API origin ending in `/api/v1`; because Next.js inlines this value into the static bundle, changing it requires a frontend rebuild.
+
+For container-based deployments, the root `Dockerfile.api` provides the same API runtime contract. It expects `DATABASE_URL`, `JWT_SECRET`, and `CORS_ORIGINS` at runtime and listens on `$PORT` (default `8000`). Run migrations as a release or pre-deploy command before starting multiple application instances.
+
+The API intentionally does not expose upload paths, source file bytes, password hashes, or database connection details. OCR, semantic embeddings, RAG, LLM providers, and resume-version editing remain separate future scopes rather than simulated production features.

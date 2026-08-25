@@ -16,7 +16,7 @@ def create_application() -> FastAPI:
     application = FastAPI(
         title=settings.app_name,
         version="0.1.0",
-        description="Phase 3 service: secure resume upload, deterministic parsing, and metadata retrieval.",
+        description="Authenticated, owner-scoped career intelligence with deterministic resume and job analysis.",
     )
     application.add_middleware(
         CORSMiddleware,

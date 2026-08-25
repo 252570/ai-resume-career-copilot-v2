@@ -28,7 +28,7 @@ AI Resume & Career Copilot is a production-oriented final-year project for build
 | Accounts and isolation | Complete | Bcrypt password hashing, JWT bearer tokens, owner-scoped records, and cross-account access tests. |
 | Interview practice | Complete | Job-aware question sets and transparent structure feedback based on length, STAR terms, measurements, and focus-skill mention. |
 | Application tracker | Complete | Private application ledger, supported status transitions, dashboard counts, and recent application summary. |
-| Deferred | Deliberately deferred | OCR fallback, LLM provider abstraction, RAG assistant, semantic embeddings, resume-version editing, Docker packaging, and final deployment configuration. |
+| Future scope | Deliberately deferred | OCR fallback, LLM provider abstraction, RAG assistant, semantic embeddings, and resume-version editing. Container packaging and Render deployment configuration are included; live database provisioning and deployment remain environment-specific operator steps. |
 
 ## Architecture
 

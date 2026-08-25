@@ -10,11 +10,15 @@
 # to psycopg 3 by app.core.config.normalize_database_url, so a provider URL can be pasted
 # verbatim without hand-editing the scheme.
 
+previews:
+  generation: manual
+
 services:
   - type: web
     name: career-copilot-api
     runtime: python
     plan: free
+    autoDeployTrigger: checksPass
     # Migrations run in the build step because pre-deploy commands are a paid Render
     # feature. A failed migration therefore fails the build and the previous version keeps
     # serving, which is the behavior we want on a free plan.
@@ -44,6 +48,7 @@ services:
   - type: web
     name: career-copilot
     runtime: static
+    autoDeployTrigger: checksPass
     # corepack activates the pnpm version pinned by "packageManager" in package.json.
     buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter career-copilot-frontend exec next build
     # next.config.ts sets output: "export", so the static export lands here.
@@ -59,6 +64,22 @@ services:
       # just a restart. Must include the /api/v1 suffix and no trailing slash.
       - key: NEXT_PUBLIC_API_BASE_URL
         value: https://career-copilot-api.onrender.com/api/v1
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Permissions-Policy
+        value: geolocation=(), microphone=(), camera=()
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; connect-src 'self' https://career-copilot-api.onrender.com; img-src 'self' data: blob:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
     # No `routes:` block on purpose. The export is a single page at /, so a catch-all
     # rewrite would add risk with no benefit, and Render serves the exported 404.html
     # for unmatched paths already.

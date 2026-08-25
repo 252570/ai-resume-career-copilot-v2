@@ -39,11 +39,14 @@ export function getResumeApiBaseUrl(): string | null {
   return configuredApiBaseUrl ? configuredApiBaseUrl.replace(/\/$/, "") : null;
 }
 
-export async function uploadResume(file: File, accessToken?: string): Promise<UploadedResume> {
+export async function uploadResume(
+  file: File,
+  accessToken?: string
+): Promise<UploadedResume> {
   const apiBaseUrl = getResumeApiBaseUrl();
   if (!apiBaseUrl) {
     throw new ResumeApiError(
-      "Resume uploads are configured for local development only. Set NEXT_PUBLIC_API_BASE_URL in frontend/.env.local and run FastAPI on port 8001.",
+      "The resume service is not configured for this build. Set NEXT_PUBLIC_API_BASE_URL to the deployed API base URL and rebuild the frontend."
     );
   }
   const payload = new FormData();
@@ -54,15 +57,23 @@ export async function uploadResume(file: File, accessToken?: string): Promise<Up
     response = await fetch(`${apiBaseUrl}/resumes/upload`, {
       method: "POST",
       body: payload,
-      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      headers: accessToken
+        ? { Authorization: `Bearer ${accessToken}` }
+        : undefined,
     });
   } catch {
-    throw new ResumeApiError("The configured resume service could not be reached. Confirm FastAPI is running and NEXT_PUBLIC_API_BASE_URL is correct.");
+    throw new ResumeApiError(
+      "The configured resume service could not be reached. Check that the API is deployed, healthy, and that NEXT_PUBLIC_API_BASE_URL is correct."
+    );
   }
 
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new ResumeApiError(typeof body.detail === "string" ? body.detail : "The resume upload could not be completed.");
+    throw new ResumeApiError(
+      typeof body.detail === "string"
+        ? body.detail
+        : "The resume upload could not be completed."
+    );
   }
   return body as UploadedResume;
 }
