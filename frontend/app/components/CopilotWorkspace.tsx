@@ -5,7 +5,7 @@
  * The interface shows deterministic methods and source-linked evidence plainly;
  * vermilion signals the next deliberate action rather than decorative urgency.
  */
-import { FormEvent, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ResumeUploadPanel } from "./ResumeUploadPanel";
 import { BrandMark } from "./BrandMark";
@@ -66,6 +66,7 @@ export function CopilotWorkspace() {
   const [applicationRole, setApplicationRole] = useState("");
   const [answer, setAnswer] = useState("");
   const [activeQuestion, setActiveQuestion] = useState(0);
+  const authEpoch = useRef(0);
 
   const api = getResumeApiBaseUrl();
   const hasApi = Boolean(api);
@@ -90,6 +91,7 @@ export function CopilotWorkspace() {
 
   const refreshWorkspace = useCallback(async () => {
     if (!token) return;
+    const requestEpoch = authEpoch.current;
     setIsRefreshing(true);
     try {
       const [profile, resumeData, jobData, dashboardData, applicationData] = await Promise.all([
@@ -99,6 +101,7 @@ export function CopilotWorkspace() {
         request<Dashboard>("/dashboard"),
         request<Application[]>("/applications"),
       ]);
+      if (authEpoch.current !== requestEpoch) return;
       setUser(profile);
       setResumes(resumeData);
       setJobs(jobData);
@@ -107,6 +110,7 @@ export function CopilotWorkspace() {
       setSelectedResume((value) => value || resumeData[0]?.id || "");
       setSelectedJob((value) => value || jobData[0]?.id || "");
     } catch (error) {
+      if (authEpoch.current !== requestEpoch) return;
       const isExpiredSession = error instanceof Error && /token|authenticated|Authentication|expired/i.test(error.message);
       setMessage(isExpiredSession ? "Your session expired. Please sign in again." : error instanceof Error ? error.message : "Could not refresh your workspace.");
       if (isExpiredSession) {
@@ -114,16 +118,47 @@ export function CopilotWorkspace() {
         setUser(null);
       }
     } finally {
-      setIsRefreshing(false);
+      if (authEpoch.current === requestEpoch) setIsRefreshing(false);
     }
-  }, [request, token]);
+  }, [authEpoch, request, token]);
+
+  const probeSession = useCallback(async () => {
+    if (!api) return null;
+    let response: Response;
+    try {
+      response = await fetch(`${api}/auth/me`, { credentials: "include" });
+    } catch {
+      throw new Error("The career service is waking up or temporarily unreachable. Please wait a moment and try again.");
+    }
+    const body = await response.json().catch(() => null);
+    if (!response.ok) throw new Error(errorText(body));
+    return body as User;
+  }, [api]);
 
   useEffect(() => {
-    // The browser cannot read the HttpOnly session cookie. A lightweight /auth/me
-    // request below establishes whether this browser has a valid session.
-    setToken("cookie");
-    setIsHydrating(false);
-  }, []);
+    // Probe the HttpOnly cookie directly without a synthetic bearer state. The
+    // epoch guard prevents a late probe response from undoing a new login.
+    let cancelled = false;
+    const requestEpoch = authEpoch.current;
+    const runProbe = async () => {
+      try {
+        const profile = await probeSession();
+        if (!cancelled && authEpoch.current === requestEpoch && profile) {
+          setUser(profile);
+          setToken("cookie");
+        }
+      } catch {
+        if (!cancelled && authEpoch.current === requestEpoch) {
+          setToken(null);
+          setUser(null);
+        }
+      } finally {
+        if (!cancelled && authEpoch.current === requestEpoch) setIsHydrating(false);
+      }
+    };
+    void runProbe();
+    return () => { cancelled = true; };
+  }, [authEpoch, probeSession]);
 
   useEffect(() => {
     void refreshWorkspace();
@@ -131,6 +166,7 @@ export function CopilotWorkspace() {
 
   const login = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    authEpoch.current += 1;
     setIsBusy(true);
     setMessage(null);
     const form = new FormData(event.currentTarget);
@@ -154,15 +190,17 @@ export function CopilotWorkspace() {
   };
 
   const signOut = async () => {
+    authEpoch.current += 1;
+    // Leave the private workspace immediately; the server cookie is cleared in
+    // the same action, even if the API needs a moment to wake from a cold start.
+    setToken(null);
+    setUser(null);
+    setMessage(null);
+    setView("Overview");
     try {
       await request<void>("/auth/logout", { method: "POST" }, false);
     } catch {
-      // Clear local React state even if the service is waking up; the cookie will expire server-side.
-    } finally {
-      setToken(null);
-      setUser(null);
-      setMessage(null);
-      setView("Overview");
+      // The local session is still closed; the short-lived server cookie will expire if unavailable.
     }
   };
 
