@@ -140,8 +140,10 @@ export function CopilotWorkspace() {
         ? { email: form.get("email"), password: form.get("password"), display_name: form.get("display_name") }
         : { email: form.get("email"), password: form.get("password") };
       const result = await request<{ access_token: string; user: User }>(path, { method: "POST", body: JSON.stringify(body) }, false);
-      // The API sets the HttpOnly cookie. Keep only a non-secret session marker in React state.
-      setToken("cookie");
+      // The API sets the HttpOnly cookie. Keep the response token only in memory
+      // for this page session so older browser cookie policies still have a fallback;
+      // it is never persisted to localStorage or sessionStorage.
+      setToken(result.access_token);
       setUser(result.user);
       setMessage("Your private workspace is ready.");
     } catch (error) {
