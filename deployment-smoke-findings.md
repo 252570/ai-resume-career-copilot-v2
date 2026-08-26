@@ -78,3 +78,16 @@ The healthy existing API at `https://career-copilot-api-1t3l.onrender.com` respo
 - The authenticated Jobs workflow successfully parsed and saved a synthetic Backend Engineer role, then navigated to Match with the saved role available in the selector.
 - After sign-out, the same synthetic account logged back in successfully through the public frontend and the saved role remained available, confirming persistence and token-based access.
 - No passwords, database URLs, JWT values, or user credentials are recorded in this file.
+
+## Improvement release verification
+
+- Commit `a4270d4` deployed live on the permanent Render frontend; commit `39f5f36` was then manually deployed for the final session-recovery message.
+- Public frontend probes returned HTTP 200. Static `/robots.txt` and `/sitemap.xml` both returned HTTP 200.
+- The deployed JavaScript bundle contains the mobile Sign out control, sample-result preview, account deletion control, and friendly expired-session recovery message.
+- The public page title now communicates evidence-based job preparation, and the signup screen renders the improved password visibility control and sample-result action.
+- API readiness remains healthy with PostgreSQL connected. Account DELETE preflight returns the permanent frontend origin and advertises GET, POST, PATCH, and DELETE.
+- No passwords, database URLs, JWT values, or user credentials are recorded in this file.
+
+## Improved release final verification
+
+The comprehensive improvement release is live on the permanent Render frontend and the healthy API. The frontend serves the updated metadata, mobile Sign out control, sample-result preview, richer match-result UI, roadmap checklist, account export/delete controls, and static robots and sitemap files. The API readiness endpoint returns HTTP 200 with PostgreSQL connected; unauthenticated account export and deletion requests return HTTP 401; and account deletion preflight allows only the configured frontend origin with the required DELETE method. The local validation suite completed with 68 backend tests passing, frontend TypeScript passing, static Next.js build passing, Python and shell syntax checks passing, and no tracked database credentials detected.
