@@ -162,3 +162,11 @@
 - [x] Gate Render auto-deploys on passing CI and add static-site security headers.
 - [x] Verify backend tests, frontend type-check, and production build after hardening.
 - [ ] Apply migrations to a real production PostgreSQL instance and complete a browser walkthrough after deployment credentials and target hosting are supplied.
+
+## Current Work — Main-Site Release Update
+
+- [x] Inspect the public entry experience and choose the least disruptive place for a public release-update view. *(Added as an explicit auth-card action so sign-in and private records remain unchanged.)*
+- [x] Add a public-safe release verification section or route to the main Career Copilot frontend. *(Local browser preview shows the new “Read the latest release update” action on the main public sign-in screen and opens the full public-safe release dossier.)*
+- [x] Preserve sign-in, onboarding, workspace navigation, API configuration, and all existing private-account flows. *(The release view returns directly to the unchanged account-access screen; no API or authenticated-workspace code path was modified.)*
+- [x] Validate frontend type checking, production static build, and desktop/mobile browser rendering. *(Type check and static build passed; local browser verified the auth entry, release dossier, and return action.)*
+- [ ] Push the update to `main` and verify the Render static deployment is live.

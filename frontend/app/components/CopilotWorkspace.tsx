@@ -9,6 +9,7 @@ import { FormEvent, type ReactNode, useCallback, useEffect, useMemo, useRef, use
 
 import { ResumeUploadPanel } from "./ResumeUploadPanel";
 import { BrandMark } from "./BrandMark";
+import { ReleaseUpdatePanel } from "./ReleaseUpdatePanel";
 import { getResumeApiBaseUrl } from "../lib/api";
 
 type User = { id: string; email: string; display_name: string };
@@ -66,6 +67,7 @@ export function CopilotWorkspace() {
   const [applicationRole, setApplicationRole] = useState("");
   const [answer, setAnswer] = useState("");
   const [activeQuestion, setActiveQuestion] = useState(0);
+  const [showReleaseBrief, setShowReleaseBrief] = useState(false);
   const authEpoch = useRef(0);
 
   const api = getResumeApiBaseUrl();
@@ -383,6 +385,10 @@ export function CopilotWorkspace() {
     return <section className="status-screen" role="status" aria-live="polite"><span className="loading-mark" aria-hidden="true" /><p className="eyebrow">Private career workspace</p><h1>Opening your <em>dossier.</em></h1><p>Checking this browser for an existing session.</p></section>;
   }
 
+  if (showReleaseBrief) {
+    return <ReleaseUpdatePanel onBack={() => setShowReleaseBrief(false)} onStart={() => setShowReleaseBrief(false)} />;
+  }
+
   if (!token || !user) {
     return <section className="auth-stage">
       <div className="auth-intro">
@@ -403,6 +409,7 @@ export function CopilotWorkspace() {
         <button className="signal-button" disabled={isBusy}>{isBusy ? "Working…" : authMode === "signup" ? "Create workspace" : "Sign in"}</button>
         <button type="button" className="quiet-button" onClick={() => { setAuthMode((mode) => mode === "signup" ? "login" : "signup"); setMessage(null); }}>{authMode === "signup" ? "I already have an account" : "Create a new account"}</button>
         <p className="auth-reassurance">Private by default. Your records are scoped to this account.</p>
+        <button type="button" className="release-brief-button" onClick={() => setShowReleaseBrief(true)}>Read the latest release update <span>↗</span></button>
         <button type="button" className="demo-button" onClick={() => setShowDemo((value) => !value)}>{showDemo ? "Hide sample result" : "See a sample result first"}</button>
         {showDemo && <DemoPreview />}
         {message && <p className="upload-error" role="alert">{message}</p>}
