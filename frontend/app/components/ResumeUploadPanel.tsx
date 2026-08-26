@@ -208,6 +208,8 @@ export function ResumeUploadPanel({
             type="file"
             accept=".pdf,.docx,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             onChange={onFileChange}
+            onClick={(event) => { event.currentTarget.value = ""; }}
+            aria-describedby="resume-file-help"
           />
           <label
             className={`drop-zone ${selectedFile ? "has-file" : ""}`}
@@ -218,9 +220,9 @@ export function ResumeUploadPanel({
             <strong>
               {selectedFile ? selectedFile.name : "Choose a resume file"}
             </strong>
-            <small>
+            <small id="resume-file-help">
               {selectedFile
-                ? `${Math.max(1, Math.ceil(selectedFile.size / 1024))} KB selected`
+                ? `${Math.max(1, Math.ceil(selectedFile.size / 1024))} KB selected · ready to review`
                 : "PDF, DOCX, or TXT · up to 5 MB"}
             </small>
           </label>
@@ -250,19 +252,27 @@ export function ResumeUploadPanel({
               Clear
             </button>
           </div>
+          {isUploading && (
+            <p className="upload-progress" role="status" aria-live="polite">
+              Reading the document and extracting only text-based evidence. Keep this tab open while the service responds.
+            </p>
+          )}
           {error && (
             <p className="upload-error" role="alert">
               {error}
             </p>
           )}
           {result && (
-            <p className="upload-success">
-              Stored {result.filename} · {result.status}
+            <p className="upload-success" role="status">
+              Stored {result.filename} · {result.status}. Review the extracted evidence below before using it in a match.
             </p>
           )}
         </form>
         {result ? (
-          <ParsedEvidence parsed={result.parsed} />
+          <>
+            <p className="review-note"><strong>Review before comparing.</strong> Parsed fields are evidence from the uploaded source, not verified claims. Correct the source document and upload a new version if anything looks wrong.</p>
+            <ParsedEvidence parsed={result.parsed} />
+          </>
         ) : (
           <div className="empty-evidence" aria-live="polite">
             <span>01</span>

@@ -15,4 +15,5 @@ def test_local_frontend_preflight_allows_authenticated_application_updates() -> 
         )
     assert response.status_code == 200
     assert "PATCH" in response.headers["access-control-allow-methods"]
+    assert "DELETE" in response.headers["access-control-allow-methods"]
     assert "authorization" in response.headers["access-control-allow-headers"].lower()

@@ -18,8 +18,22 @@ const sans = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "AI Resume & Career Copilot",
-  description: "An explainable career intelligence platform, beginning with a disciplined foundation.",
+  title: "AI Resume & Career Copilot | Evidence-based job preparation",
+  description: "Compare resume evidence with real job requirements, identify skill gaps, build a practical roadmap, practice interviews, and track applications in one private workspace.",
+  keywords: ["resume matcher", "career copilot", "job search tools", "skill gap analysis", "interview practice"],
+  metadataBase: new URL("https://career-copilot-la6y.onrender.com"),
+  openGraph: {
+    title: "AI Resume & Career Copilot",
+    description: "Turn resume evidence and job requirements into clear next steps.",
+    url: "https://career-copilot-la6y.onrender.com/",
+    siteName: "AI Resume & Career Copilot",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "AI Resume & Career Copilot",
+    description: "Evidence-based resume matching, roadmaps, interview practice, and application tracking.",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
