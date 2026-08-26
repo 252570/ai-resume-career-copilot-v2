@@ -106,8 +106,9 @@ export function CopilotWorkspace() {
       setSelectedResume((value) => value || resumeData[0]?.id || "");
       setSelectedJob((value) => value || jobData[0]?.id || "");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not refresh your workspace.");
-      if (error instanceof Error && /token|authenticated|Authentication|expired/i.test(error.message)) {
+      const isExpiredSession = error instanceof Error && /token|authenticated|Authentication|expired/i.test(error.message);
+      setMessage(isExpiredSession ? "Your session expired. Please sign in again." : error instanceof Error ? error.message : "Could not refresh your workspace.");
+      if (isExpiredSession) {
         localStorage.removeItem("career_copilot_token");
         setToken(null);
         setUser(null);
