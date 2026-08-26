@@ -78,7 +78,7 @@ def export_account(user: User = Depends(get_current_user), session: Session = De
                 "status": analysis.status,
                 "explanation": analysis.explanation or {},
                 "roadmap": [
-                    {"skill": item.skill, "priority": item.priority, "sequence": item.sequence, "practice_suggestion": item.practice_suggestion, "learning_stage": item.learning_stage}
+                    {"id": _value(item.id), "skill": item.skill, "priority": item.priority, "sequence": item.sequence, "practice_suggestion": item.practice_suggestion, "learning_stage": item.learning_stage, "completed": item.completed_at is not None}
                     for item in analysis.roadmap_items
                 ],
                 "projects": [

@@ -6,12 +6,18 @@ from pydantic import BaseModel, Field
 
 
 class RoadmapItemResponse(BaseModel):
+    id: UUID
     skill: str
     priority: str
     prerequisites: list[str]
     sequence: int
     practice_suggestion: str
     learning_stage: str
+    completed: bool = False
+
+
+class RoadmapItemUpdate(BaseModel):
+    completed: bool
 
 
 class ProjectRecommendationResponse(BaseModel):

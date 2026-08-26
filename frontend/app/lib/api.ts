@@ -9,7 +9,7 @@ export type ParsedResume = {
   skills: string[];
   education: string[];
   experience: string[];
-  summary?: string | null;
+  summary?: string[];
   projects?: string[];
   certifications?: string[];
   links?: string[];
@@ -39,6 +39,32 @@ export function getResumeApiBaseUrl(): string | null {
   return configuredApiBaseUrl ? configuredApiBaseUrl.replace(/\/$/, "") : null;
 }
 
+export async function updateResume(
+  resumeId: string,
+  parsed: ParsedResume,
+  accessToken?: string,
+): Promise<UploadedResume> {
+  const apiBaseUrl = getResumeApiBaseUrl();
+  if (!apiBaseUrl) throw new ResumeApiError("The resume service is not configured for this build.");
+  let response: Response;
+  try {
+    response = await fetch(`${apiBaseUrl}/resumes/${resumeId}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...(accessToken && accessToken !== "cookie" ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
+      body: JSON.stringify(parsed),
+    });
+  } catch {
+    throw new ResumeApiError("The resume service could not be reached. Please retry shortly.");
+  }
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new ResumeApiError(typeof body.detail === "string" ? body.detail : "The resume evidence could not be saved.");
+  return body as UploadedResume;
+}
+
 export async function uploadResume(
   file: File,
   accessToken?: string
@@ -57,7 +83,8 @@ export async function uploadResume(
     response = await fetch(`${apiBaseUrl}/resumes/upload`, {
       method: "POST",
       body: payload,
-      headers: accessToken
+      credentials: "include",
+      headers: accessToken && accessToken !== "cookie"
         ? { Authorization: `Bearer ${accessToken}` }
         : undefined,
     });

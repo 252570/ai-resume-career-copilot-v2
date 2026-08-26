@@ -24,11 +24,17 @@ def test_signup_login_and_me(db_session: Session, monkeypatch) -> None:
         assert response.status_code == 201, response.text
         payload = response.json()
         assert payload["token_type"] == "bearer"
+        assert "career_copilot_session=" in response.headers["set-cookie"]
+        assert "HttpOnly" in response.headers["set-cookie"]
+        assert "SameSite=lax" in response.headers["set-cookie"]
+        assert client.get("/api/v1/auth/me").json()["email"] == "user@example.com"
         assert client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {payload['access_token']}"}).json()["email"] == "user@example.com"
         assert client.post("/api/v1/auth/signup", json={"email": "user@example.com", "display_name": "Second User", "password": "correct-horse-battery-staple"}).status_code == 409
         assert client.post("/api/v1/auth/login", json={"email": "user@example.com", "password": "incorrect-password"}).status_code == 401
         login = client.post("/api/v1/auth/login", json={"email": "user@example.com", "password": "correct-horse-battery-staple"})
         assert login.status_code == 200
+        assert client.post("/api/v1/auth/logout").status_code == 204
+        assert client.get("/api/v1/auth/me").status_code == 401
     app.dependency_overrides.clear()
     get_settings.cache_clear()
 

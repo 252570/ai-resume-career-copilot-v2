@@ -163,6 +163,7 @@ class RoadmapItem(TimestampMixin, Base):
     sequence: Mapped[int] = mapped_column(Integer, nullable=False)
     practice_suggestion: Mapped[str] = mapped_column(Text, nullable=False)
     learning_stage: Mapped[str] = mapped_column(String(64), nullable=False)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     match_result: Mapped[MatchResult] = relationship(back_populates="roadmap_items")
 
 

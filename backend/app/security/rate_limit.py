@@ -33,6 +33,12 @@ def _check(key: tuple[str, str], now: float) -> None:
     window.append(now)
 
 
+def reset_rate_limit_state() -> None:
+    """Clear in-memory counters for deterministic tests and local development."""
+    with _lock:
+        _attempts.clear()
+
+
 def enforce_auth_rate_limit(request: Request, email: str) -> None:
     """Limit authentication attempts by client and normalized email address.
 

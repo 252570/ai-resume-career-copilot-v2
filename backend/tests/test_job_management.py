@@ -57,3 +57,20 @@ def test_uploads_text_job_description(db_session: Session) -> None:
         assert response.json()["title"] == "job"
         assert {"Python", "SQL", "Docker"}.issubset(response.json()["parsed"]["required_skills"])
     app.dependency_overrides.clear()
+
+
+def test_rejects_duplicate_job_for_same_authenticated_account(db_session: Session, monkeypatch) -> None:
+    monkeypatch.setenv("JWT_SECRET", "test-only-signing-secret-with-sufficient-length")
+    from app.core.config import get_settings
+
+    get_settings.cache_clear()
+    with _client(db_session) as client:
+        account = client.post("/api/v1/auth/signup", json={"email": "jobs@example.com", "display_name": "Jobs User", "password": "correct-horse-battery-staple"}).json()
+        headers = {"Authorization": f"Bearer {account['access_token']}"}
+        payload = {"title": "Backend Engineer", "company_name": "Example Labs", "description": "Python FastAPI PostgreSQL Docker production backend requirements."}
+        assert client.post("/api/v1/jobs", headers=headers, json=payload).status_code == 201
+        duplicate = client.post("/api/v1/jobs", headers=headers, json=payload)
+        assert duplicate.status_code == 409
+        assert "already saved" in duplicate.json()["detail"]
+    app.dependency_overrides.clear()
+    get_settings.cache_clear()

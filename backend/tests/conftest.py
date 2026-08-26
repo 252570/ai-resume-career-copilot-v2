@@ -8,6 +8,14 @@ from sqlalchemy.orm import Session
 from app.db.base import Base
 from app.db.session import get_engine, get_session_factory
 import app.models  # noqa: F401
+from app.security.rate_limit import reset_rate_limit_state
+
+
+@pytest.fixture(autouse=True)
+def reset_auth_rate_limits() -> Generator[None, None, None]:
+    reset_rate_limit_state()
+    yield
+    reset_rate_limit_state()
 
 
 @pytest.fixture

@@ -17,3 +17,4 @@ def test_local_frontend_preflight_allows_authenticated_application_updates() -> 
     assert "PATCH" in response.headers["access-control-allow-methods"]
     assert "DELETE" in response.headers["access-control-allow-methods"]
     assert "authorization" in response.headers["access-control-allow-headers"].lower()
+    assert response.headers["access-control-allow-credentials"] == "true"

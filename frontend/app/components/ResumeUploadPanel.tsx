@@ -12,6 +12,7 @@ import {
   ResumeApiError,
   UploadedResume,
   uploadResume,
+  updateResume,
 } from "../lib/api";
 
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
@@ -57,6 +58,68 @@ function ContactField({
   );
 }
 
+function listText(value: string[] | undefined) {
+  return (value ?? []).join("\n");
+}
+
+function listValue(value: string) {
+  return value.split("\n").map(item => item.trim()).filter(Boolean);
+}
+
+function EditableEvidence({
+  resume,
+  accessToken,
+  onSaved,
+}: {
+  resume: UploadedResume;
+  accessToken?: string;
+  onSaved: (resume: UploadedResume) => void;
+}) {
+  const [draft, setDraft] = useState<ParsedResume>(resume.parsed);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const updateField = (field: keyof ParsedResume, value: string | string[] | null) => {
+    setDraft(current => ({ ...current, [field]: value }));
+  };
+
+  const onSave = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      const saved = await updateResume(resume.id, draft, accessToken);
+      onSaved(saved);
+    } catch (error) {
+      setSaveError(error instanceof ResumeApiError ? error.message : "The corrected evidence could not be saved.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <form className="review-form" onSubmit={onSave} aria-labelledby="review-heading">
+      <div className="result-heading"><span id="review-heading">Review and correct</span><i /><b>User-confirmed fields</b></div>
+      <p className="review-note">The parser only reads text. Correct anything it missed before running a match; the original uploaded file remains unchanged.</p>
+      <div className="review-fields">
+        <label>Candidate name<input value={draft.candidate_name ?? ""} onChange={event => updateField("candidate_name", event.target.value || null)} /></label>
+        <label>Email<input type="email" value={draft.email ?? ""} onChange={event => updateField("email", event.target.value || null)} /></label>
+        <label>Phone<input value={draft.phone ?? ""} onChange={event => updateField("phone", event.target.value || null)} /></label>
+        <label>LinkedIn<input type="url" value={draft.linkedin ?? ""} onChange={event => updateField("linkedin", event.target.value || null)} placeholder="https://linkedin.com/in/…" /></label>
+        <label>GitHub<input type="url" value={draft.github ?? ""} onChange={event => updateField("github", event.target.value || null)} placeholder="https://github.com/…" /></label>
+      </div>
+      <div className="review-lists">
+        <label>Skills <textarea value={listText(draft.skills)} onChange={event => updateField("skills", listValue(event.target.value))} placeholder="One skill per line" /></label>
+        <label>Summary <textarea value={listText(draft.summary)} onChange={event => updateField("summary", listValue(event.target.value))} placeholder="One evidence line per line" /></label>
+        <label>Experience <textarea value={listText(draft.experience)} onChange={event => updateField("experience", listValue(event.target.value))} placeholder="One evidence line per line" /></label>
+        <label>Education <textarea value={listText(draft.education)} onChange={event => updateField("education", listValue(event.target.value))} placeholder="One evidence line per line" /></label>
+      </div>
+      {saveError && <p className="upload-error" role="alert">{saveError}</p>}
+      <button className="signal-button" type="submit" disabled={isSaving}>{isSaving ? "Saving corrections…" : "Save reviewed evidence"}</button>
+    </form>
+  );
+}
+
 function ParsedEvidence({ parsed }: { parsed: ParsedResume }) {
   return (
     <div className="parsed-evidence" aria-live="polite">
@@ -95,11 +158,15 @@ function ParsedEvidence({ parsed }: { parsed: ParsedResume }) {
   );
 }
 
+type ResumeHistoryItem = { id: string; filename: string; status: string };
+
 export function ResumeUploadPanel({
   accessToken,
+  savedResumes = [],
   onUploaded,
 }: {
   accessToken?: string;
+  savedResumes?: ResumeHistoryItem[];
   onUploaded?: (resume: UploadedResume) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -271,6 +338,7 @@ export function ResumeUploadPanel({
         {result ? (
           <>
             <p className="review-note"><strong>Review before comparing.</strong> Parsed fields are evidence from the uploaded source, not verified claims. Correct the source document and upload a new version if anything looks wrong.</p>
+            <EditableEvidence resume={result} accessToken={accessToken} onSaved={saved => { setResult(saved); onUploaded?.(saved); }} />
             <ParsedEvidence parsed={result.parsed} />
           </>
         ) : (
@@ -282,6 +350,7 @@ export function ResumeUploadPanel({
             </p>
           </div>
         )}
+        {savedResumes.length > 0 && <div className="resume-history"><div className="result-heading"><span>Resume versions</span><i /><b>{savedResumes.length} saved</b></div><p className="review-note">Keep a focused version for each target role. Older uploads remain available as separate evidence records.</p><div className="history-list">{savedResumes.map((resume, index) => <div key={resume.id} className="history-row"><span className="history-index">{String(index + 1).padStart(2, "0")}</span><div><strong>{resume.filename}</strong><small>{resume.status === "reviewed" ? "User-reviewed evidence" : "Parser output awaiting review"}</small></div><b>{resume.status}</b></div>)}</div></div>}
       </div>
     </section>
   );

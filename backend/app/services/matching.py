@@ -4,17 +4,19 @@ import re
 from typing import Any
 
 from app.schemas.analysis import SkillGap
+from app.services.skill_normalization import canonical_skill_key, canonical_skill_list
 
 
 def analyze_resume_job(resume_data: dict[str, Any], job_data: dict[str, Any], extracted_text: str) -> dict[str, Any]:
     """Produce a transparent, rule-based comparison; no model inference is used."""
-    resume_skills = set(resume_data.get("skills", []))
-    required = list(job_data.get("required_skills", []))
-    preferred = [skill for skill in job_data.get("preferred_skills", []) if skill not in required]
-    matched_required = [skill for skill in required if skill in resume_skills]
-    matched_preferred = [skill for skill in preferred if skill in resume_skills]
-    missing_required = [skill for skill in required if skill not in resume_skills]
-    missing_preferred = [skill for skill in preferred if skill not in resume_skills]
+    resume_skills = canonical_skill_list(list(resume_data.get("skills", [])))
+    resume_skill_keys = {canonical_skill_key(skill) for skill in resume_skills}
+    required = canonical_skill_list(list(job_data.get("required_skills", [])))
+    preferred = [skill for skill in canonical_skill_list(list(job_data.get("preferred_skills", []))) if skill not in required]
+    matched_required = [skill for skill in required if canonical_skill_key(skill) in resume_skill_keys]
+    matched_preferred = [skill for skill in preferred if canonical_skill_key(skill) in resume_skill_keys]
+    missing_required = [skill for skill in required if canonical_skill_key(skill) not in resume_skill_keys]
+    missing_preferred = [skill for skill in preferred if canonical_skill_key(skill) not in resume_skill_keys]
     required_score = 70.0 * _coverage(len(matched_required), len(required))
     preferred_score = 20.0 * _coverage(len(matched_preferred), len(preferred))
     completeness_checks = [bool(resume_data.get(key)) for key in ("summary", "experience", "education")]
@@ -33,7 +35,7 @@ def analyze_resume_job(resume_data: dict[str, Any], job_data: dict[str, Any], ex
         SkillGap(skill=skill, requirement_type="preferred", priority="moderate", job_evidence=f"Preferred skill: {skill}")
         for skill in missing_preferred
     ]
-    ats = _ats_analysis(resume_data, job_data, resume_skills, required, preferred, missing_required, missing_preferred, extracted_text)
+    ats = _ats_analysis(resume_data, job_data, resume_skill_keys, required, preferred, missing_required, missing_preferred, extracted_text)
     return {
         "match_score": round(sum(score_breakdown.values()), 2),
         "score_breakdown": score_breakdown,
@@ -50,8 +52,23 @@ def _coverage(matched: int, total: int) -> float:
     return 1.0 if total == 0 else matched / total
 
 
+_EVIDENCE_ALIASES = {
+    "PostgreSQL": ("postgresql", "postgres"),
+    "Node.js": ("node\\.?js", "nodejs"),
+    "React": ("react\\.?js", "reactjs", "react"),
+    "REST APIs": ("restful?\\s+apis?", "rest\\s+apis?"),
+    "Kubernetes": ("kubernetes", "k8s"),
+    "scikit-learn": ("scikit[- ]learn", "sklearn"),
+    "GCP": ("gcp", "google\\s+cloud"),
+    "AWS": ("aws", "amazon\\s+web\\s+services"),
+    "CI/CD": ("ci\\s*/?\\s*cd", "cicd"),
+}
+
+
 def _evidence_lines(text: str, skill: str) -> list[str]:
-    lines = [line.strip() for line in text.splitlines() if re.search(rf"\b{re.escape(skill)}\b", line, re.IGNORECASE)]
+    terms = _EVIDENCE_ALIASES.get(skill, (re.escape(skill),))
+    pattern = rf"(?<![\w.+#-])(?:{'|'.join(terms)})(?![\w-])"
+    lines = [line.strip() for line in text.splitlines() if re.search(pattern, line, re.IGNORECASE)]
     return lines[:3]
 
 
@@ -65,10 +82,10 @@ def _partial_areas(resume_data: dict[str, Any], job_data: dict[str, Any]) -> lis
 
 
 def _ats_analysis(
-    resume_data: dict[str, Any], job_data: dict[str, Any], resume_skills: set[str], required: list[str], preferred: list[str], missing_required: list[str], missing_preferred: list[str], extracted_text: str
+    resume_data: dict[str, Any], job_data: dict[str, Any], resume_skill_keys: set[str], required: list[str], preferred: list[str], missing_required: list[str], missing_preferred: list[str], extracted_text: str
 ) -> dict[str, object]:
     terms = required + preferred
-    keyword_coverage = round(100 * _coverage(len([term for term in terms if term in resume_skills]), len(terms)), 2)
+    keyword_coverage = round(100 * _coverage(len([term for term in terms if canonical_skill_key(term) in resume_skill_keys]), len(terms)), 2)
     checks = [
         {"name": "Readable source text", "passed": len(extracted_text.strip()) >= 80, "detail": "The uploaded document yielded readable text." if len(extracted_text.strip()) >= 80 else "Very little readable text was extracted."},
         {"name": "Skills section", "passed": bool(resume_data.get("skills")), "detail": "Skills were detected." if resume_data.get("skills") else "No supported skills were detected."},
@@ -76,4 +93,4 @@ def _ats_analysis(
         {"name": "Education section", "passed": bool(resume_data.get("education")), "detail": "Education evidence was detected." if resume_data.get("education") else "No education section was detected."},
     ]
     improvements = [f"Add evidence for required skill: {skill}." for skill in missing_required] + [f"Consider adding preferred skill evidence: {skill}." for skill in missing_preferred]
-    return {"keyword_coverage": keyword_coverage, "missing_important_keywords": missing_required + missing_preferred, "checks": checks, "improvement_areas": improvements, "score_breakdown": {"required_keywords": len(required), "preferred_keywords": len(preferred), "detected_resume_skills": len(resume_skills)}}
+    return {"keyword_coverage": keyword_coverage, "missing_important_keywords": missing_required + missing_preferred, "checks": checks, "improvement_areas": improvements, "score_breakdown": {"required_keywords": len(required), "preferred_keywords": len(preferred), "detected_resume_skills": len(resume_skill_keys)}}

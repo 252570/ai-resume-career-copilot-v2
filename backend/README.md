@@ -11,12 +11,12 @@ All versioned routes are prefixed with `/api/v1`. Protected routes require `Auth
 | Area | Routes |
 | --- | --- |
 | Health | `GET /health`, `GET /health/ready` |
-| Authentication | `POST /auth/signup`, `POST /auth/login`, `GET /auth/me` |
+| Authentication | `POST /auth/signup`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/me` |
 | Account controls | `GET /account/export`, `DELETE /account` |
-| Resumes | `POST /resumes/upload`, `GET /resumes`, `GET /resumes/{id}` |
+| Resumes | `POST /resumes/upload`, `GET /resumes`, `GET /resumes/{id}`, `PATCH /resumes/{id}` |
 | Jobs | `POST /jobs`, `POST /jobs/upload`, `GET /jobs`, `GET /jobs/{id}` |
 | Matching | `POST /analyses/match`, `GET /analyses/{id}` |
-| Plans | `POST /plans/{analysis_id}/generate`, `GET /plans/{analysis_id}` |
+| Plans | `POST /plans/{analysis_id}/generate`, `GET /plans/{analysis_id}`, `PATCH /plans/items/{item_id}` |
 | Interview practice | `POST /interviews`, `GET /interviews`, `GET /interviews/{id}`, `POST /interviews/{id}/responses` |
 | Applications | `POST /applications`, `GET /applications`, `PATCH /applications/{id}` |
 | Dashboard | `GET /dashboard` |
@@ -62,4 +62,5 @@ The repository root contains `render.yaml`, which defines a Python API service a
 
 For container-based deployments, the root `Dockerfile.api` provides the same API runtime contract. It expects `DATABASE_URL`, `JWT_SECRET`, and `CORS_ORIGINS` at runtime and listens on `$PORT` (default `8000`). Run migrations as a release or pre-deploy command before starting multiple application instances.
 
-The API intentionally does not expose upload paths, source file bytes, password hashes, or database connection details. Authentication attempts are throttled per client and normalized email address; the limiter is process-local and should move to a shared store before horizontal scaling. Authenticated users can export their owner-scoped records or permanently delete their account and stored resume files. OCR, semantic embeddings, RAG, LLM providers, and resume-version editing remain separate future scopes rather than simulated production features.
+The API intentionally does not expose upload paths, source file bytes, password hashes, or database connection details. Authentication attempts are throttled per client and normalized email address; the limiter is process-local and should move to a shared store before horizontal scaling. Browser clients receive a Secure, HttpOnly, SameSite cookie session; bearer responses remain temporarily available for backward compatibility with existing API consumers.
+ Authenticated users can export their owner-scoped records or permanently delete their account and stored resume files. Parsed resume evidence can be user-reviewed and corrected without changing the original upload. OCR, semantic embeddings, RAG, and external LLM providers remain separate future scopes rather than simulated production features.

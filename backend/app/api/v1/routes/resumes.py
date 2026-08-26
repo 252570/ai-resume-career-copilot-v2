@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, s
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.api.v1.dependencies import assert_record_access, get_optional_current_user
+from app.api.v1.dependencies import assert_record_access, get_current_user, get_optional_current_user
 from app.core.config import get_settings
 from app.core.errors import ResumeUploadError
 from app.db.session import get_db_session
@@ -101,6 +101,24 @@ async def upload_resume(
 
     response = _as_response(resume)
     return ResumeUploadResponse(**response.model_dump())
+
+
+@router.patch("/{resume_id}", response_model=ResumeDetailResponse)
+def update_resume(
+    resume_id: UUID,
+    payload: ParsedResumeData,
+    session: Session = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+) -> ResumeDetailResponse:
+    """Save user-confirmed corrections to parsed evidence without changing the source upload."""
+    resume = CareerRepository(session).get_resume(resume_id)
+    if resume is None or resume.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resume not found.")
+    resume.parsed_data = payload.model_dump(mode="json")
+    resume.status = "reviewed"
+    session.commit()
+    session.refresh(resume)
+    return _as_response(resume)
 
 
 @router.get("/{resume_id}", response_model=ResumeDetailResponse)

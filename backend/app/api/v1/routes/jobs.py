@@ -35,6 +35,11 @@ def _persist_job(payload: JobCreateRequest, session: Session, current_user: User
         payload = payload.model_copy(update={"user_id": current_user.id})
     elif payload.user_id is not None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication is required to add a job description to an account.")
+    checksum = hashlib.sha256(payload.description.encode()).hexdigest()
+    if payload.user_id is not None:
+        existing = session.query(Job).filter(Job.user_id == payload.user_id, Job.checksum_sha256 == checksum).first()
+        if existing is not None:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This job description is already saved in your workspace.")
     parsed = parse_job_description(payload.description, payload.title, payload.company_name)
     job = Job(
         user_id=payload.user_id,
@@ -42,7 +47,7 @@ def _persist_job(payload: JobCreateRequest, session: Session, current_user: User
         company_name=parsed.company_name,
         description=payload.description,
         source_url=str(payload.source_url) if payload.source_url else None,
-        checksum_sha256=hashlib.sha256(payload.description.encode()).hexdigest(),
+        checksum_sha256=checksum,
         parsed_data=parsed.model_dump(mode="json"), status="parsed",
     )
     repository = CareerRepository(session)
