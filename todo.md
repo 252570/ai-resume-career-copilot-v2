@@ -169,4 +169,4 @@
 - [x] Add a public-safe release verification section or route to the main Career Copilot frontend. *(Local browser preview shows the new “Read the latest release update” action on the main public sign-in screen and opens the full public-safe release dossier.)*
 - [x] Preserve sign-in, onboarding, workspace navigation, API configuration, and all existing private-account flows. *(The release view returns directly to the unchanged account-access screen; no API or authenticated-workspace code path was modified.)*
 - [x] Validate frontend type checking, production static build, and desktop/mobile browser rendering. *(Type check and static build passed; local browser verified the auth entry, release dossier, and return action.)*
-- [ ] Push the update to `main` and verify the Render static deployment is live.
+- [x] Push the update to `main` and verify the Render static deployment is live. *(Commit `e590cf1` is on `main`; live bundle inspection and the public Render site both show the new “Read the latest release update” action.)*
