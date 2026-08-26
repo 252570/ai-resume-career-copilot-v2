@@ -91,3 +91,26 @@ The healthy existing API at `https://career-copilot-api-1t3l.onrender.com` respo
 ## Improved release final verification
 
 The comprehensive improvement release is live on the permanent Render frontend and the healthy API. The frontend serves the updated metadata, mobile Sign out control, sample-result preview, richer match-result UI, roadmap checklist, account export/delete controls, and static robots and sitemap files. The API readiness endpoint returns HTTP 200 with PostgreSQL connected; unauthenticated account export and deletion requests return HTTP 401; and account deletion preflight allows only the configured frontend origin with the required DELETE method. The local validation suite completed with 68 backend tests passing, frontend TypeScript passing, static Next.js build passing, Python and shell syntax checks passing, and no tracked database credentials detected.
+
+## Expanded improvement release
+
+- Commit `f1152c7` deployed successfully to the healthy API and permanent static frontend.
+- Commit `cdcb88a` deployed successfully to the permanent static frontend.
+- API readiness returned HTTP 200 with the database connected after Alembic migration `20260826_0008`.
+- API signup/login responses set the `career_copilot_session` cookie with HttpOnly, Secure, SameSite=Lax, and a one-hour max age; credentialed CORS returned the exact permanent frontend origin.
+- Cookie-jar probes for `/auth/me` and `/dashboard` returned HTTP 200; unauthenticated account export returned HTTP 401.
+- Frontend public page rendered successfully after the final deployment. The post-fix browser smoke test then signed in through the public UI, loaded the owner-scoped dashboard and protected data, opened Account controls, and signed out back to the login screen.
+- No credentials, database URLs, JWT values, or user secrets are recorded here.
+
+## Final public probes
+- The permanent frontend, `robots.txt`, and `sitemap.xml` each returned HTTP 200.
+- The healthy API readiness endpoint returned HTTP 200; unauthenticated account export returned HTTP 401.
+- The exact frontend-origin CORS preflight returned `Access-Control-Allow-Origin: https://career-copilot-la6y.onrender.com`, `Access-Control-Allow-Credentials: true`, and the expected GET/POST/PATCH/DELETE method list.
+- No credentials, database URLs, JWT values, or user secrets are recorded here.
+
+## Session lifecycle fix verification
+- Commit `82302e3` was pushed to `main` and Render reports it live for the permanent static frontend.
+- The updated frontend now probes `/auth/me` directly while hydrating; it does not create a synthetic bearer state before the probe completes, and an epoch guard prevents stale probe/refresh responses from clearing a newer login.
+- After the prior browser session was signed out, reopening `https://career-copilot-la6y.onrender.com/?v=82302e3` returned to the create-account screen without the stale session-expired message, confirming the old cookie was cleared and the fresh build rendered normally.
+- On the final post-deploy smoke test, the approved disposable account signed in through the public browser, opened the owner-scoped dashboard, loaded protected counts and workspace data, opened Account controls, and signed out back to the public login screen.
+- No credentials, database URLs, JWT values, or user secrets are recorded here.
