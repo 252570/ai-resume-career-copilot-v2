@@ -182,4 +182,4 @@
 - [x] Inspect the startup session probe and identify why the public page blocks on a slow API response. *(The initial render was gated on the cookie-backed `/auth/me` request.)*
 - [x] Make the sign-in page available immediately while a bounded cookie-session check runs safely in the background. *(The account-access screen no longer waits for the background cookie probe.)*
 - [x] Preserve authenticated automatic resume behavior and avoid any persistent browser token storage. *(The cookie probe and epoch guard are unchanged; authenticated sessions still transition automatically, and bearer fallback remains memory-only.)*
-- [ ] Validate a cold and anonymous browser entry, then push and verify the Render deployment. *(Local initial HTML and browser checks show the usable account-access form directly, without the former loading screen.)*
+- [x] Validate a cold and anonymous browser entry, then push and verify the Render deployment. *(Local and public browser checks show the usable account-access form directly, without the former loading screen; Render is serving commit `057d3ba`.)*
