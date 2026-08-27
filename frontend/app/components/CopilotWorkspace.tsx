@@ -51,7 +51,6 @@ export function CopilotWorkspace() {
   const [message, setMessage] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isHydrating, setIsHydrating] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
@@ -126,11 +125,15 @@ export function CopilotWorkspace() {
 
   const probeSession = useCallback(async () => {
     if (!api) return null;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 3500);
     let response: Response;
     try {
-      response = await fetch(`${api}/auth/me`, { credentials: "include" });
+      response = await fetch(`${api}/auth/me`, { credentials: "include", signal: controller.signal });
     } catch {
       throw new Error("The career service is waking up or temporarily unreachable. Please wait a moment and try again.");
+    } finally {
+      window.clearTimeout(timeout);
     }
     const body = await response.json().catch(() => null);
     if (!response.ok) throw new Error(errorText(body));
@@ -138,8 +141,9 @@ export function CopilotWorkspace() {
   }, [api]);
 
   useEffect(() => {
-    // Probe the HttpOnly cookie directly without a synthetic bearer state. The
-    // epoch guard prevents a late probe response from undoing a new login.
+    // Probe the HttpOnly cookie in the background. The public access screen is
+    // intentionally usable immediately; the epoch guard prevents a late probe
+    // from undoing a new sign-in started by the visitor.
     let cancelled = false;
     const requestEpoch = authEpoch.current;
     const runProbe = async () => {
@@ -154,9 +158,7 @@ export function CopilotWorkspace() {
           setToken(null);
           setUser(null);
         }
-      } finally {
-        if (!cancelled && authEpoch.current === requestEpoch) setIsHydrating(false);
-      }
+      } finally { /* The public screen remains available while this finishes. */ }
     };
     void runProbe();
     return () => { cancelled = true; };
@@ -379,10 +381,6 @@ export function CopilotWorkspace() {
 
   if (!hasApi) {
     return <section className="service-boundary"><p className="eyebrow">Service boundary</p><h1>Connect the <em>career engine.</em></h1><p>Set <code>NEXT_PUBLIC_API_BASE_URL</code> to the FastAPI <code>/api/v1</code> address, then reload this static frontend. No account or resume data is stored in the browser.</p></section>;
-  }
-
-  if (isHydrating) {
-    return <section className="status-screen" role="status" aria-live="polite"><span className="loading-mark" aria-hidden="true" /><p className="eyebrow">Private career workspace</p><h1>Opening your <em>dossier.</em></h1><p>Checking this browser for an existing session.</p></section>;
   }
 
   if (showReleaseBrief) {

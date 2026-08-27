@@ -170,3 +170,16 @@
 - [x] Preserve sign-in, onboarding, workspace navigation, API configuration, and all existing private-account flows. *(The release view returns directly to the unchanged account-access screen; no API or authenticated-workspace code path was modified.)*
 - [x] Validate frontend type checking, production static build, and desktop/mobile browser rendering. *(Type check and static build passed; local browser verified the auth entry, release dossier, and return action.)*
 - [x] Push the update to `main` and verify the Render static deployment is live. *(Commit `e590cf1` is on `main`; live bundle inspection and the public Render site both show the new “Read the latest release update” action.)*
+
+## Current Work — Resume Project Addition
+
+- [x] Inspect the submitted resume and identify the existing Projects section and available insertion space.
+- [x] Add only the AI Resume Career Copilot project entry, preserving all other resume content and styling.
+- [x] Visually compare the revised PDF against the original and deliver the updated resume file.
+
+## Current Work — Fast Session Startup
+
+- [x] Inspect the startup session probe and identify why the public page blocks on a slow API response. *(The initial render was gated on the cookie-backed `/auth/me` request.)*
+- [x] Make the sign-in page available immediately while a bounded cookie-session check runs safely in the background. *(The account-access screen no longer waits for the background cookie probe.)*
+- [x] Preserve authenticated automatic resume behavior and avoid any persistent browser token storage. *(The cookie probe and epoch guard are unchanged; authenticated sessions still transition automatically, and bearer fallback remains memory-only.)*
+- [ ] Validate a cold and anonymous browser entry, then push and verify the Render deployment. *(Local initial HTML and browser checks show the usable account-access form directly, without the former loading screen.)*
